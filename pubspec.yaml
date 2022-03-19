@@ -19,13 +19,18 @@ environment:
 dependencies:
   flutter_media_notification:
   http: ^0.13.1
-  audioplayers: 0.18.3
+  audioplayers: ^0.20.1
   share: ^0.6.4+3
   fluttertoast: ^4.0.1
   wakelock: ^0.1.4+1
   url_launcher: ^5.4.5
   shared_preferences: ^0.5.7
   provider: ^4.0.5
+  smart_select: ^4.3.2
+  flutter_easyloading: ^3.0.0
+  location:
+  # flutter_adhan: ^1.0.1
+  adhan: ^1.1.16
   flutter:
     sdk: flutter
   flutter_localizations:

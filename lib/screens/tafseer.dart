@@ -56,8 +56,6 @@ class _TafseerState extends State<Tafseer> {
               // crossAxisSpacing: 10,
               // crossAxisCount: 1,
               // ),
-              
-              
               itemBuilder: (context, i) {
                 return cardSearch(tafseer[i],raquemayat[i],thispage,i);
               },
@@ -122,7 +120,7 @@ class _TafseerState extends State<Tafseer> {
     // if (numOfSurah != 1) {
     inSwra = jsonResult[numOfSurah]["ayahs"];
 
-    if(thispage == 1){
+    if(thispage == 0){
       inSwra = jsonResult[numOfSurah-1]["ayahs"];
       for (var i = 0; i < inSwra.length; i++) {
         print(thispage);

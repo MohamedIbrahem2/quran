@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_media_notification/flutter_media_notification.dart';
@@ -31,12 +32,19 @@ class AppState with ChangeNotifier {
   get getActualPage => actualPage ?? 1;
   get getPageOfSaved => pageOfSaved ?? 0;
 
-  // String url;
-  // void setPageUrl(String ss){
-  //   url = ss;
-  //   notifyListeners();
-  // }
-  // get getUrl => url;
+  int qareaa;
+  void setQareaa(int qar){
+    qareaa = qar;
+    notifyListeners();
+  }
+  get getQareaa => qareaa;
+
+  int prayer;
+  void setPrayer(int pr){
+    prayer = pr;
+    notifyListeners();
+  }
+  get getPrayer => prayer;
 }
 class MyApp extends StatefulWidget {
   @override
@@ -65,6 +73,7 @@ class _MyAppState extends State<MyApp> {
         Locale("ar"),
         Locale("en") // OR Locale('ar', 'AE') OR Other RTL locales
       ],
+      builder: EasyLoading.init(),
       locale: Locale('ar'),
       theme: ThemeData(
         primaryColor: Colors.black,
@@ -96,6 +105,19 @@ class _MyAppState extends State<MyApp> {
   AppState appState = Provider.of<AppState>(context ,listen: false);
   int savedPage = prefs.getInt('savedPage');
   int lastPage = prefs.getInt('lastPage');
+  int qareaa = prefs.getInt("Qareaa");
+  int prayer = prefs.getInt("prayer");
+  if(qareaa !=null){
+    appState.setQareaa(qareaa);
+  }else{
+    appState.setQareaa(6);
+  }
+  if(prayer !=null){
+    appState.setPrayer(prayer);
+  }else{
+    appState.setPrayer(1);
+  }
+
   if(lastPage != null){
     page = lastPage;
   

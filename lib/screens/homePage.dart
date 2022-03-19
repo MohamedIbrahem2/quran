@@ -1,5 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/fehres.dart';
 import 'package:quran/lists/listImage.dart';
@@ -15,15 +17,17 @@ import 'package:quran/screens/dialog/savedialog.dart';
 import 'package:quran/screens/doaa.dart';
 import 'package:quran/screens/fehresPages.dart';
 import 'package:quran/screens/our.dart';
+import 'package:quran/screens/prayer.dart';
 import 'package:quran/screens/tafseer.dart';
 import 'package:quran/search.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_select/smart_select.dart';
 
 import 'audio/saf7aaGetAudio.dart';
 
 class MyHomePage extends StatefulWidget {
-  final int initialPage;
+  final int initialPage ;
   MyHomePage({this.initialPage});
   @override
   _MyHomePageState createState() =>
@@ -45,6 +49,10 @@ class _MyHomePageState extends State<MyHomePage> {
   bool messages = false;
   PageController _pageController;
   bool isplay = false;
+  Location location = new Location();
+  bool _serviceEnabled;
+  PermissionStatus _permissionGranted;
+  LocationData _locationData;
   Future<bool> _onWillPop() async {
     return (await showDialog(
           context: context,
@@ -69,13 +77,66 @@ class _MyHomePageState extends State<MyHomePage> {
         )) ??
         false;
   }
+
+List<S2Choice<int>> options = [
+  S2Choice<int>(value: 1, title: 'الشيخ ماهر المعيقلي'),
+  S2Choice<int>(value: 2, title: 'الشيخ عبدالباسط (مجود)'),
+  S2Choice<int>(value: 3, title: 'الشيخ عبدالباسط (مرتل)'),
+  S2Choice<int>(value: 4, title: 'الشيخ أبوبكر الشاطري'),
+  S2Choice<int>(value: 5, title: 'الشيخ عبدالرحمن السديسي'),
+  S2Choice<int>(value: 6, title: 'الشيخ مشاري العفايسي'),
+  S2Choice<int>(value: 7, title: 'الشيخ محمود الحصري (مرتل)'),
+  S2Choice<int>(value: 8, title: 'الشيخ محمود الحصري (مجود)'),
+  S2Choice<int>(value: 9, title: 'الشيخ المنشاوي(مجود)'),
+  S2Choice<int>(value: 10, title: 'الشيخ محمد ايوب'),
+];
+
+
+  String soundUrl(String verse , String page){
+    AppState appState = Provider.of<AppState>(context,listen: false);
+    switch (appState.getQareaa) {
+      case 1:
+        return "https://aswaatulqurraa.com/files/Pages/Maher%20al%20Muaiqly%20(15%20Liner)/$verse/$page.mp3";
+        break;
+      case 2:
+        return "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 3:
+        return "https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 4:
+        return "https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 5:
+        return "https://everyayah.com/data/Abdurrahmaan_As-Sudais_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 6:
+        return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 7:
+        return "https://everyayah.com/data/Husary_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 8:
+        return "https://everyayah.com/data/Husary_Mujawwad_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 9:
+        return "https://everyayah.com/data/Minshawy_Mujawwad_64kbps/PageMp3s/Page$page.mp3";
+        break;
+      case 10:
+        return "https://everyayah.com/data/Muhammad_Ayyoub_128kbps/PageMp3s/Page$page.mp3";
+        break;
+      default: 
+      return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
+    }
+  }
+
   @override
   void initState() {
     if (initialPage == null) {
       _pageController = PageController(
         initialPage: 0,
       );
-      url = "https://aswaatulqurraa.com/files/Pages/Maher%20al%20Muaiqly%20(15%20Liner)/1/001.mp3";
+      url = soundUrl("1", "001");
       page = 1;
       swra = swraNameList[listOfNameSwraPerPages[0]];
       part = listOfParts[listOfPartPerPage[0]];
@@ -83,11 +144,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _pageController = PageController(
         initialPage: initialPage - 1,
       );
-      String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>10 && initialPage<100 ? "0$initialPage":"$initialPage";
+      String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
       // int swraNumber = listOfNameSwraPerPages[initialPage - 1] + 1;
       int partNumber = listOfPartPerPage[initialPage - 1]+1;
       // url = "https://www.quranpagesmp3.com/MP3/pgs/$thePageNumber-$theswraNumber.mp3";
-      url = "https://aswaatulqurraa.com/files/Pages/Maher%20al%20Muaiqly%20(15%20Liner)/$partNumber/$thePageNumber.mp3";
+      url = soundUrl("$partNumber", "$thePageNumber");
       page = initialPage;
       swra = swraNameList[listOfNameSwraPerPages[initialPage - 1]];
       part = listOfParts[listOfPartPerPage[initialPage - 1]];
@@ -116,10 +177,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     //scrollDirection: MediaQuery.of(context).size.width>MediaQuery.of(context).size.height?Axis.vertical:Axis.horizontal,
                     controller: _pageController,
                     onPageChanged: (i) async {
-                        String thePageNumber = i+1<10 ? "00${i+1}": i+1>10 && i+1<100 ? "0${i+1}":"${i+1}";
+                        String thePageNumber = i+1<10 ? "00${i+1}": i+1>=10 && i+1<100 ? "0${i+1}":"${i+1}";
                         int partNumber = listOfPartPerPage[i+1 -1]+1;
                       setState(() {
-                        url = "https://aswaatulqurraa.com/files/Pages/Maher%20al%20Muaiqly%20(15%20Liner)/$partNumber/$thePageNumber.mp3";
+                        url = soundUrl("$partNumber", "$thePageNumber");
                         page = i + 1;
                         swra = swraNameList[listOfNameSwraPerPages[i]];
                         part = listOfParts[listOfPartPerPage[i]];
@@ -267,6 +328,30 @@ class _MyHomePageState extends State<MyHomePage> {
                               fit: BoxFit.fill,
                             )))
                     : Container(),
+                   show
+                    ? Positioned(
+                      bottom: 60,
+                      child: Container(
+                        color: Colors.white,
+                        height: 50,
+                        width: MediaQuery.of(context).size.width,
+                        child: Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: SmartSelect<int>.single(
+                            placeholder: "اختر صوت القارئ",
+                            title: 'اختر القارئ المفضل لديك',
+                            choiceType: S2ChoiceType.switches,
+                            value: appState.getQareaa,
+                            choiceItems: options,
+                            onChange: (state){  
+                            _saveQareaaValue(state.value);
+                            appState.setQareaa(state.value);
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MyHomePage(initialPage: page,)));
+                            }
+                          ),
+                        ),
+                      ),
+                    ):Container(),
                 show
                     ? Positioned(
                         top: 35,
@@ -283,7 +368,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   alignment: Alignment.center,
                                   //padding: EdgeInsets.only(right:10,left:10),
                                   width: 170,
-                                  height: 280,
+                                  height: 310,
                                   child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -311,6 +396,36 @@ class _MyHomePageState extends State<MyHomePage> {
                                               SizedBox(width: 5),
                                               Text(
                                                 "البحث",
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 1,
+                                        width: 170,
+                                        color: Colors.white30,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                           getLocation();                                        
+                                        },
+                                        child: Container(
+                                          width: 170,
+                                          color: Colors.transparent,
+                                          child: Row(
+                                            children: <Widget>[
+                                              Icon(
+                                                Icons.timer,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                "مواقيت الصلاة",
                                                 style: TextStyle(
                                                     fontSize: 18,
                                                     color: Colors.white),
@@ -829,6 +944,10 @@ class _MyHomePageState extends State<MyHomePage> {
     print(page);
     await prefs.setInt('lastPage', lastPage);
   }
+  _saveQareaaValue(int valQ) async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     await prefs.setInt('Qareaa', valQ);
+  }
 
   Widget pages(img) {
     AppState appState = Provider.of<AppState>(context, listen: false);
@@ -872,5 +991,38 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+  }
+  getLocation()async{
+    Location location = new Location();
+    try{
+      _serviceEnabled = await location.serviceEnabled();
+if (!_serviceEnabled) {
+  _serviceEnabled = await location.requestService().then((value)=>getLocation());
+  if (!_serviceEnabled) {
+     _serviceEnabled = await location.requestService().then((value)=>getLocation());
+  }
+}
+_permissionGranted = await location.hasPermission();
+if (_permissionGranted == PermissionStatus.DENIED) {
+  _permissionGranted = await location.requestPermission();
+  if (_permissionGranted != PermissionStatus.GRANTED) {
+    return;
+  }
+}
+
+EasyLoading.show(status: "Please wait a moment...");
+_locationData = await location.getLocation();
+    setlocation();
+    print("lat ${_locationData.latitude} , long ${_locationData.longitude}");
+
+    
+    }catch(e){
+       print(e);
+    }
+  }
+
+    setlocation() async{
+     EasyLoading.showSuccess("Ready to use" , duration: Duration(milliseconds: 400));
+     Navigator.push(context, MaterialPageRoute(builder: (context)=>Prayer(_locationData.latitude,_locationData.longitude))); 
   }
 }
