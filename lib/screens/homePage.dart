@@ -1,7 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/fehres.dart';
 import 'package:quran/lists/listImage.dart';
@@ -17,13 +15,12 @@ import 'package:quran/screens/dialog/savedialog.dart';
 import 'package:quran/screens/doaa.dart';
 import 'package:quran/screens/fehresPages.dart';
 import 'package:quran/screens/our.dart';
-import 'package:quran/screens/prayer.dart';
+import 'package:quran/screens/qiblah.dart';
 import 'package:quran/screens/tafseer.dart';
 import 'package:quran/search.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_select/smart_select.dart';
-
 import 'audio/saf7aaGetAudio.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -49,10 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
   bool messages = false;
   PageController _pageController;
   bool isplay = false;
-  Location location = new Location();
-  bool _serviceEnabled;
-  PermissionStatus _permissionGranted;
-  LocationData _locationData;
   Future<bool> _onWillPop() async {
     return (await showDialog(
           context: context,
@@ -411,7 +404,8 @@ List<S2Choice<int>> options = [
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                           getLocation();                                        
+                                           //getLocation();   
+                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>QiblahGet()));                                     
                                         },
                                         child: Container(
                                           width: 170,
@@ -419,13 +413,13 @@ List<S2Choice<int>> options = [
                                           child: Row(
                                             children: <Widget>[
                                               Icon(
-                                                Icons.timer,
+                                                Icons.directions,
                                                 size: 25,
                                                 color: Colors.white,
                                               ),
                                               SizedBox(width: 5),
                                               Text(
-                                                "مواقيت الصلاة",
+                                                "إتجاه القبلة",
                                                 style: TextStyle(
                                                     fontSize: 18,
                                                     color: Colors.white),
@@ -992,37 +986,37 @@ List<S2Choice<int>> options = [
       ],
     );
   }
-  getLocation()async{
-    Location location = new Location();
-    try{
-      _serviceEnabled = await location.serviceEnabled();
-if (!_serviceEnabled) {
-  _serviceEnabled = await location.requestService().then((value)=>getLocation());
-  if (!_serviceEnabled) {
-     _serviceEnabled = await location.requestService().then((value)=>getLocation());
-  }
-}
-_permissionGranted = await location.hasPermission();
-if (_permissionGranted == PermissionStatus.DENIED) {
-  _permissionGranted = await location.requestPermission();
-  if (_permissionGranted != PermissionStatus.GRANTED) {
-    return;
-  }
-}
+//   getLocation()async{
+//     Location location = new Location();
+//     try{
+//       _serviceEnabled = await location.serviceEnabled();
+// if (!_serviceEnabled) {
+//   _serviceEnabled = await location.requestService().then((value)=>getLocation());
+//   if (!_serviceEnabled) {
+//      _serviceEnabled = await location.requestService().then((value)=>getLocation());
+//   }
+// }
+// _permissionGranted = await location.hasPermission();
+// if (_permissionGranted == PermissionStatus.DENIED) {
+//   _permissionGranted = await location.requestPermission();
+//   if (_permissionGranted != PermissionStatus.GRANTED) {
+//     return;
+//   }
+// }
 
-EasyLoading.show(status: "Please wait a moment...");
-_locationData = await location.getLocation();
-    setlocation();
-    print("lat ${_locationData.latitude} , long ${_locationData.longitude}");
+// EasyLoading.show(status: "Please wait a moment...");
+// _locationData = await location.getLocation();
+//     setlocation();
+//     print("lat ${_locationData.latitude} , long ${_locationData.longitude}");
 
     
-    }catch(e){
-       print(e);
-    }
-  }
+//     }catch(e){
+//        print(e);
+//     }
+//   }
 
-    setlocation() async{
-     EasyLoading.showSuccess("Ready to use" , duration: Duration(milliseconds: 400));
-     Navigator.push(context, MaterialPageRoute(builder: (context)=>Prayer(_locationData.latitude,_locationData.longitude))); 
-  }
+//     setlocation() async{
+//      EasyLoading.showSuccess("Ready to use" , duration: Duration(milliseconds: 400));
+//      Navigator.push(context, MaterialPageRoute(builder: (context)=>Prayer(_locationData.latitude,_locationData.longitude))); 
+//   }
 }
