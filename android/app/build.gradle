@@ -47,8 +47,8 @@ android {
         applicationId "giga.quran"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 9
-        versionName "9.2.2"
+        versionCode 10
+        versionName "10.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
