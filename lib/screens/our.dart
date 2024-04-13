@@ -15,7 +15,7 @@ class _A3malState extends State<A3mal> {
   @override
   Widget build(BuildContext context) {
     final key = new GlobalKey<ScaffoldState>();
-    return new Scaffold(
+    return  Scaffold(
       key: key,
       body:
       Container(
@@ -39,7 +39,7 @@ class _A3malState extends State<A3mal> {
                   onTap: _launchURL,
                   onLongPress: () {
                     Clipboard.setData(new ClipboardData(text: _copy));
-                    key.currentState.showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                         new SnackBar(content: new Text("تم النسخ للحافظة",style: TextStyle(fontSize:18)),));
                   },
                 ),
@@ -50,7 +50,7 @@ class _A3malState extends State<A3mal> {
                   onTap: sendEmail,
                   onLongPress: () {
                     Clipboard.setData(new ClipboardData(text: _copy2));
-                    key.currentState.showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                         new SnackBar(content: new Text("تم النسخ للحافظة",style: TextStyle(fontSize:18),),));
                   },
                 ),

@@ -15,7 +15,7 @@ class Doaa extends StatelessWidget{
                   width:MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.width > MediaQuery.of(context).size.height ?MediaQuery.of(context).size.height*3 :MediaQuery.of(context).size.height-25,
                   child: ColorFiltered(
-                                    colorFilter: ColorFilter.mode(Colors.orange[50], BlendMode.darken),
+                                    colorFilter: ColorFilter.mode(Colors.orange[50]!, BlendMode.darken),
                                     child: Container(
                     child: Image(fit:BoxFit.fill,image: AssetImage("images/${doaaImages[index]}")),
                   )),

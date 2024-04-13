@@ -212,7 +212,7 @@ getHezpNum(int numOfPage){
                 toast_show("ثلاثه ارباع الحزب 17 الجزء" + listOfParts[8]);
                 break;
             case 173:
-                toast_show("بدايه الحزب 17 الجزء" + listOfParts[8]);
+                toast_show("بدايه الحزب 18 الجزء" + listOfParts[8]);
                 break;
             case 175:
                 toast_show("ربع الحزب 18 الجزء" + listOfParts[8]);

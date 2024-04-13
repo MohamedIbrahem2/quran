@@ -1,4 +1,4 @@
-package giga.quran
+package com.quran
 
 import io.flutter.embedding.android.FlutterActivity
 

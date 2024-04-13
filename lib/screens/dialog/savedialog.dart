@@ -16,11 +16,11 @@ class CustomSaveDialog extends StatelessWidget {
   final int page;
 
   CustomSaveDialog({
-    @required this.page,
-    @required this.title,
-    @required this.description,
-    @required this.buttonText,
-    this.image,
+    required this.page,
+    required this.title,
+    required this.description,
+    required this.buttonText,
+    required this.image,
   });
 
   @override
@@ -74,7 +74,7 @@ class CustomSaveDialog extends StatelessWidget {
         children: <Widget>[
           Align(
             alignment: Alignment.bottomRight,
-            child: FlatButton(
+            child: TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // To close the dialog
               },
@@ -84,7 +84,7 @@ class CustomSaveDialog extends StatelessWidget {
 
           Align(
             alignment: Alignment.bottomLeft,
-            child: FlatButton(
+            child: TextButton(
               onPressed: () {
                AppState appState = Provider.of<AppState>(context,listen: false);
                appState.setPageOfSaved(page-1);

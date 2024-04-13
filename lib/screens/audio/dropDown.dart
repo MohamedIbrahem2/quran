@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget dropDown(Function onChanged(value), List<String> members , BuildContext context , String value) {
+Widget dropDown(Function? onChanged(value), List<String> members , BuildContext context , String value) {
   return Container(
     color: Colors.black12,
     height: 40,
@@ -19,7 +19,7 @@ Widget dropDown(Function onChanged(value), List<String> members , BuildContext c
         height: 2,
         color: Colors.deepPurpleAccent,
       ),
-      onChanged:onChanged,
+      onChanged: onChanged,
       items: members
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(

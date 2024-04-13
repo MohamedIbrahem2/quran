@@ -35,48 +35,51 @@ class _AudioPlayerCustomState extends State<AudioPlayerCustom> {
                         style:
                             TextStyle(fontSize: 18, color: Colors.black54)),
                     slider(),
-                    InkWell(
-                      onTap: () async {
-                        playing
-                            ? await audioPlayer
-                                .pause()
-                                .then((value) => setState(() {
-                                      playing = false;
-                                    }))
-                            : await audioPlayer
-                                .play(
-                                    widget.url,
-                                    isLocal: false)
-                                .then((value) => setState(() {
-                                      playing = true;
-                                    }));
+                       IconButton(
 
-                        audioPlayer.onDurationChanged.listen((Duration dd) {
-                          setState(() {
-                            duration = dd;
-                          });
-                        });
-                        audioPlayer.onAudioPositionChanged
-                            .listen((Duration dd) {
-                          setState(() {
-                            possition = dd;
-                          });
-                          if (possition.inSeconds.toInt() ==
-                              duration.inSeconds.toInt()) {
-                            setState(() {
-                              playing = false;
-                              audioPlayer.pause();
-                              audioPlayer.seek(Duration(seconds: 0));
-                            });
-                          }
-                        });
-                      },
-                      child: Icon(
-                        playing == false ? Icons.play_arrow : Icons.pause,
-                        size: 35,
-                        color: Colors.black54,
+                        color: Colors.black54, onPressed: () async{
+                         {
+                           playing
+                           ? await audioPlayer
+                               .pause()
+                               .then((value) => setState(() {
+                             playing = false;
+                             print("pause");
+                           }))
+                         : await audioPlayer
+                         .play(
+                         UrlSource(widget.url),)
+                             .then((value) => setState(() {
+                         playing = true;
+                         print(widget.url);
+                         }));
+
+                         audioPlayer.onDurationChanged.listen((Duration dd) {
+                         setState(() {
+                         duration = dd;
+                         });
+                         });
+                         audioPlayer.onPositionChanged
+                             .listen((Duration dd) {
+                         setState(() {
+                         possition = dd;
+                         });
+                         if (possition.inSeconds.toInt() ==
+                         duration.inSeconds.toInt()) {
+                         setState(() {
+                         playing = false;
+                         audioPlayer.pause();
+                         audioPlayer.seek(Duration(seconds: 0));
+                         });
+                         }
+                         });
+                       }
+                       }, icon: Icon(
+                         playing == false ? Icons.play_arrow : Icons.pause,
+                         size: 35,
+                       ),
                       ),
-                    ),
+
                   ],
                 ),
               ),

@@ -1,3 +1,5 @@
+
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,18 +16,18 @@ import 'package:quran/screens/dialog/goDialog.dart';
 import 'package:quran/screens/dialog/savedialog.dart';
 import 'package:quran/screens/doaa.dart';
 import 'package:quran/screens/fehresPages.dart';
+import 'package:choice/choice.dart';
 import 'package:quran/screens/our.dart';
 import 'package:quran/screens/qiblah.dart';
 import 'package:quran/screens/tafseer.dart';
 import 'package:quran/search.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_select/smart_select.dart';
 import 'audio/saf7aaGetAudio.dart';
 
 class MyHomePage extends StatefulWidget {
   final int initialPage ;
-  MyHomePage({this.initialPage});
+  MyHomePage({required this.initialPage});
   @override
   _MyHomePageState createState() =>
       _MyHomePageState(initialPage: this.initialPage);
@@ -33,57 +35,84 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int initialPage;
+
   AudioPlayer audioPlayer = AudioPlayer();
-  String url;
-  _MyHomePageState({this.initialPage});
+  late String url;
+
+
+  _MyHomePageState({required this.initialPage});
+
   bool show = false;
   bool darkMode = false;
-  int page;
-  String part;
-  String swra;
+  late int page;
+  late String part;
+  late String swra;
   Duration duration = Duration();
   Duration possition = Duration();
   bool messages = false;
-  PageController _pageController;
+  PageController _pageController = PageController();
   bool isplay = false;
+
+
   Future<bool> _onWillPop() async {
     return (await showDialog(
-          context: context,
-          builder: (context) => new AlertDialog(
-            backgroundColor: Colors.black87,
-            title: new Text('خروج', style: TextStyle(color: Colors.white)),
-            content: new Text('هل حقا تود الخروج من التطبيق ؟',
-                style: TextStyle(color: Colors.white)),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: new Text('لا', style: TextStyle(color: Colors.white)),
-              ),
-              new FlatButton(
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: new Text('نعم', style: TextStyle(color: Colors.white)),
-              ),
-            ],
+      context: context,
+      builder: (context) =>
+      new AlertDialog(
+        backgroundColor: Colors.black87,
+        title: new Text('خروج', style: TextStyle(color: Colors.white)),
+        content: new Text('هل حقا تود الخروج من التطبيق ؟',
+            style: TextStyle(color: Colors.white)),
+        actions: <Widget>[
+          new TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('لا', style: TextStyle(color: Colors.white)),
           ),
-        )) ??
+          new TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: new Text('نعم', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    )) ??
         false;
   }
 
-List<S2Choice<int>> options = [
+  /*List<S2Choice<int>> options = [
+
   S2Choice<int>(value: 1, title: 'الشيخ ماهر المعيقلي'),
-  S2Choice<int>(value: 2, title: 'الشيخ عبدالباسط (مجود)'),
-  S2Choice<int>(value: 3, title: 'الشيخ عبدالباسط (مرتل)'),
-  S2Choice<int>(value: 4, title: 'الشيخ أبوبكر الشاطري'),
-  S2Choice<int>(value: 5, title: 'الشيخ عبدالرحمن السديسي'),
-  S2Choice<int>(value: 6, title: 'الشيخ مشاري العفايسي'),
-  S2Choice<int>(value: 7, title: 'الشيخ محمود الحصري (مرتل)'),
-  S2Choice<int>(value: 8, title: 'الشيخ محمود الحصري (مجود)'),
-  S2Choice<int>(value: 9, title: 'الشيخ المنشاوي(مجود)'),
-  S2Choice<int>(value: 10, title: 'الشيخ محمد ايوب'),
+    S2Choice<int>(value: 1, title: 'الشيخ عبدالباسط (مجود)'),
+    S2Choice<int>(value: 1, title: 'الشيخ عبدالباسط (مرتل)'),
+    S2Choice<int>(value: 1, title: 'الشيخ أبوبكر الشاطري'),
+    S2Choice<int>(value: 1, title: 'الشيخ عبدالرحمن السديسي'),
+    S2Choice<int>(value: 1, title: 'الشيخ مشاري العفايسي'),
+    S2Choice<int>(value: 1, title: 'الشيخ محمود الحصري (مرتل)'),
+    S2Choice<int>(value: 1, title: 'الشيخ محمود الحصري (مجود)'),
+  S2Choice<int>(value: 1, title: 'الشيخ المنشاوي(مجود)'),
+  S2Choice<int>(value: 1, title: 'الشيخ محمد ايوب'),
 ];
 
+   */
+  List<String> choices = [
+  'الشيخ ماهر المعيقلي',
+  'الشيخ عبدالباسط (مجود)',
+  'الشيخ عبدالباسط (مرتل)',
+  'الشيخ أبوبكر الشاطري',
+  'الشيخ عبدالرحمن السديسي',
+  'الشيخ مشاري العفايسي',
+  'الشيخ محمود الحصري (مرتل)',
+  'الشيخ محمود الحصري (مجود)',
+  'الشيخ المنشاوي(مجود)',
+  'الشيخ محمد ايوب',
+];
+
+  String? selectedValue;
+
+  void setSelectedValue(String? value) {
+    setState(() => selectedValue = value);
+  }
 
   String soundUrl(String verse , String page){
     AppState appState = Provider.of<AppState>(context,listen: false);
@@ -118,35 +147,27 @@ List<S2Choice<int>> options = [
       case 10:
         return "https://everyayah.com/data/Muhammad_Ayyoub_128kbps/PageMp3s/Page$page.mp3";
         break;
-      default: 
+      default:
       return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
     }
   }
 
   @override
   void initState() {
-    if (initialPage == null) {
-      _pageController = PageController(
-        initialPage: 0,
-      );
-      url = soundUrl("1", "001");
-      page = 1;
-      swra = swraNameList[listOfNameSwraPerPages[0]];
-      part = listOfParts[listOfPartPerPage[0]];
-    } else {
-      _pageController = PageController(
-        initialPage: initialPage - 1,
-      );
-      String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
-      // int swraNumber = listOfNameSwraPerPages[initialPage - 1] + 1;
-      int partNumber = listOfPartPerPage[initialPage - 1]+1;
-      // url = "https://www.quranpagesmp3.com/MP3/pgs/$thePageNumber-$theswraNumber.mp3";
-      url = soundUrl("$partNumber", "$thePageNumber");
-      page = initialPage;
-      swra = swraNameList[listOfNameSwraPerPages[initialPage - 1]];
-      part = listOfParts[listOfPartPerPage[initialPage - 1]];
-    }
-    super.initState();
+    AppState appState = Provider.of<AppState>(context,listen: false);
+    _pageController = PageController(
+      initialPage: initialPage - 1,
+    );
+    String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
+    // int swraNumber = listOfNameSwraPerPages[initialPage - 1] + 1;
+    int partNumber = listOfPartPerPage[initialPage - 1]+1;
+    // url = "https://www.quranpagesmp3.com/MP3/pgs/$thePageNumber-$theswraNumber.mp3";
+    url = soundUrl("$partNumber", "$thePageNumber");
+    appState.first ? playPause() : null;
+    page = initialPage;
+    swra = swraNameList[listOfNameSwraPerPages[initialPage - 1]];
+    part = listOfParts[listOfPartPerPage[initialPage - 1]];
+      super.initState();
   }
 
     @override
@@ -167,7 +188,8 @@ List<S2Choice<int>> options = [
             child: Stack(
               children: <Widget>[
                 PageView.builder(
-                    //scrollDirection: MediaQuery.of(context).size.width>MediaQuery.of(context).size.height?Axis.vertical:Axis.horizontal,
+                reverse: true,
+                  //scrollDirection: MediaQuery.of(context).size.width>MediaQuery.of(context).size.height?Axis.vertical:Axis.horizontal,
                     controller: _pageController,
                     onPageChanged: (i) async {
                         String thePageNumber = i+1<10 ? "00${i+1}": i+1>=10 && i+1<100 ? "0${i+1}":"${i+1}";
@@ -181,7 +203,7 @@ List<S2Choice<int>> options = [
                         _savelastPage();
                         print("$url");
                       });
-                     
+
                     },
                     itemCount: listOfImages.length,
                     itemBuilder: (context, index) {
@@ -225,7 +247,7 @@ List<S2Choice<int>> options = [
                 show ?
                 Positioned(
                   top:35,
-                  left: 0,
+                  right: 0,
                 child: Container(
                   height:210,
                   width:50,
@@ -242,43 +264,8 @@ List<S2Choice<int>> options = [
                                         width: 40,
                                         color: Colors.white30,
                                       ),
-                    IconButton(onPressed: () async {
-                        isplay && "${audioPlayer.state}" != "AudioPlayerState.PAUSED"
-                            ? await audioPlayer
-                                .pause()
-                                .then((value) {
-                                  //MediaNotification.hideNotification();
-                                  setState(() {
-                                      isplay = false;
-                                    });})
-                            : await audioPlayer
-                                .play(
-                                    url,
-                                    isLocal: false)
-                                .then((value) async{
-                                  //MediaNotification.showNotification(title: 'تلاوة قرآنية', author: 'الشيخ ماهر المعيقلي');
-                                   setState(() {
-                                      isplay = true;
-                                    });});
-                        audioPlayer.onDurationChanged.listen((Duration dd) {
-                          setState(() {
-                            duration = dd;
-                          });
-                        });
-                        audioPlayer.onAudioPositionChanged
-                            .listen((Duration dd) async {
-                          setState(() {
-                            possition = dd;
-                          });
-                          if (possition.inSeconds.toInt() ==
-                              duration.inSeconds.toInt()) {
-                            setState(() {
-                              isplay = false;
-                              audioPlayer.pause();
-                              audioPlayer.seek(Duration(seconds: 0));
-                            });
-                          }
-                        });
+                    IconButton(onPressed: ()  {
+                        playPause();
                       },
                       icon: Icon(
                         isplay == false && "${audioPlayer.state}" != "AudioPlayerState.PLAYING"? Icons.play_arrow : Icons.pause,
@@ -326,21 +313,37 @@ List<S2Choice<int>> options = [
                       bottom: 60,
                       child: Container(
                         color: Colors.white,
-                        height: 50,
+                        height: 60,
                         width: MediaQuery.of(context).size.width,
-                        child: Directionality(
-                          textDirection: TextDirection.ltr,
-                          child: SmartSelect<int>.single(
-                            placeholder: "اختر صوت القارئ",
+                        child: Center(
+                          child: PromptedChoice<String>.single(
                             title: 'اختر القارئ المفضل لديك',
-                            choiceType: S2ChoiceType.switches,
-                            value: appState.getQareaa,
-                            choiceItems: options,
-                            onChange: (state){  
-                            _saveQareaaValue(state.value);
-                            appState.setQareaa(state.value);
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MyHomePage(initialPage: page,)));
-                            }
+                            clearable: true,
+                            value: selectedValue,
+                            onChanged: (state){
+                              selectedValue = state;
+                              _saveQareaaValue(choices.indexOf(state!) + 1);
+                              appState.setQareaa(choices.indexOf(state) + 1);
+                              String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
+                              int partNumber = listOfPartPerPage[initialPage - 1]+1;
+                              url = soundUrl("$partNumber", "$thePageNumber");
+                            },
+                            itemCount: choices.length,
+                            itemBuilder: (state, i) {
+                              return ChoiceChip(
+                                elevation: 5,
+                                selected: state.selected(choices[i]),
+                                onSelected: state.onSelected(choices[i]),
+                                label: Text(choices[i]),
+                              );
+                            },
+                            listBuilder: ChoiceList.createGrid(
+                              spacing: 10,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 25,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -404,8 +407,8 @@ List<S2Choice<int>> options = [
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                           //getLocation();   
-                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>QiblahGet()));                                     
+                                           //getLocation();
+                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>QiblahGet()));
                                         },
                                         child: Container(
                                           width: 170,
@@ -500,7 +503,7 @@ List<S2Choice<int>> options = [
                                         width: 170,
                                         color: Colors.white30,
                                       ),
-                                      
+
                                       GestureDetector(
                                         onTap: () {
                                           setState(() {
@@ -853,7 +856,7 @@ List<S2Choice<int>> options = [
                                       GestureDetector(
                                         onTap: () {
                                           final RenderBox box =
-                                              context.findRenderObject();
+                                              context.findRenderObject() as RenderBox;
                                           Share.share(
                                               "وددت مشاركة تطبيق المصحف هذا معك \n https://play.google.com/store/apps/details?id=giga.quran",
                                               subject:
@@ -958,7 +961,7 @@ List<S2Choice<int>> options = [
               child: ColorFiltered(
                 colorFilter: darkMode
                     ? ColorFilter.mode(Colors.white, BlendMode.difference)
-                    : ColorFilter.mode(Colors.orange[50], BlendMode.darken),
+                    : ColorFilter.mode(Colors.orange[50]!, BlendMode.darken),
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.width >
@@ -1009,7 +1012,7 @@ List<S2Choice<int>> options = [
 //     setlocation();
 //     print("lat ${_locationData.latitude} , long ${_locationData.longitude}");
 
-    
+
 //     }catch(e){
 //        print(e);
 //     }
@@ -1017,6 +1020,49 @@ List<S2Choice<int>> options = [
 
 //     setlocation() async{
 //      EasyLoading.showSuccess("Ready to use" , duration: Duration(milliseconds: 400));
-//      Navigator.push(context, MaterialPageRoute(builder: (context)=>Prayer(_locationData.latitude,_locationData.longitude))); 
+//      Navigator.push(context, MaterialPageRoute(builder: (context)=>Prayer(_locationData.latitude,_locationData.longitude)));
 //   }
+void playPause(){
+  AppState appState = Provider.of<AppState>(context,listen: false);
+  isplay && "${audioPlayer.state}" != "AudioPlayerState.PAUSED"
+      ?  audioPlayer
+      .pause()
+      .then((value) {
+    //MediaNotification.hideNotification();
+    setState(() {
+      appState.first = false;
+      isplay = false;
+    });})
+      :  audioPlayer
+      .play(
+      UrlSource(url),
+      mode: PlayerMode.mediaPlayer)
+      .then((value) {
+    //MediaNotification.showNotification(title: 'تلاوة قرآنية', author: 'الشيخ ماهر المعيقلي');
+    setState(() {
+      print(url);
+      isplay = true;
+    });});
+  audioPlayer.onDurationChanged.listen((Duration dd) {
+    setState(() {
+      duration = dd;
+    });
+  });
+  audioPlayer.onPositionChanged
+      .listen((Duration dd)  {
+    setState(() {
+      possition = dd + Duration(milliseconds: 200);
+    });
+    if (possition.inSeconds.toInt() ==
+        duration.inSeconds.toInt()) {
+      setState(() {
+        isplay = false;
+        audioPlayer.pause();
+        audioPlayer.seek(Duration(seconds: 0));
+        appState.first = true;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MyHomePage(initialPage: page + 1,)));
+      });
+    }
+  });
+}
 }

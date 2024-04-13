@@ -14,9 +14,9 @@ class CustomGoDialog extends StatelessWidget {
   final Image image;
 
   CustomGoDialog({
-    @required this.title,
-    @required this.buttonText,
-    this.image,
+    required this.title,
+    required this.buttonText,
+    required this.image,
   });
 
   final TextEditingController pagecont = TextEditingController();
@@ -72,7 +72,7 @@ class CustomGoDialog extends StatelessWidget {
             SizedBox(height: 10.0),
              Form(
                key: _formKey,
-               autovalidate: true,
+               autovalidateMode: AutovalidateMode.always,
                       child: TextFormField(
                  textAlign: TextAlign.center,
                  controller: pagecont,
@@ -87,7 +87,7 @@ class CustomGoDialog extends StatelessWidget {
                                 ),
                               ),
                               validator: (val) {
-                                if(val.length==0 || int.parse(val.trim()) > 604 || int.parse(val.trim()) <= 0) {
+                                if(val!.length==0 || int.parse(val.trim()) > 604 || int.parse(val.trim()) <= 0) {
                                   return "لا توجد صفحة بهذا الرقم";
                                 }else{
                                   return null;
@@ -106,7 +106,7 @@ class CustomGoDialog extends StatelessWidget {
               children: <Widget>[
                 Align(
                   alignment: Alignment.bottomRight,
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // To close the dialog
                     },
@@ -116,9 +116,9 @@ class CustomGoDialog extends StatelessWidget {
 
                 Align(
                   alignment: Alignment.bottomLeft,
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
-                      if(_formKey.currentState.validate()){
+                      if(_formKey.currentState!.validate()){
                         Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => MyHomePage(initialPage:int.parse(pagecont.text))),

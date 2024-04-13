@@ -29,8 +29,10 @@ class Fehress extends StatelessWidget {
     );
   }
   Widget parts(context , image , index){
-    return RaisedButton(
-                  color: Colors.orange[50],
+    return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange[50],
+                    ),
                   onPressed: (){
                     Navigator.pushAndRemoveUntil(
           context,

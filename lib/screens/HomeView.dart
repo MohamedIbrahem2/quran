@@ -5,7 +5,7 @@ import 'package:quran/main.dart';
 
 class LifeCycleManager extends StatefulWidget {
   final Widget child;
-  LifeCycleManager({Key key, this.child}) : super(key: key);
+  LifeCycleManager({ key, required this.child}) : super(key: key);
   _LifeCycleManagerState createState() => _LifeCycleManagerState();
 }
 class _LifeCycleManagerState extends State<LifeCycleManager>
@@ -24,9 +24,6 @@ class _LifeCycleManagerState extends State<LifeCycleManager>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
       try{if (state == AppLifecycleState.paused) {
-        AudioPlayer.players.forEach((key, value) {
-          value.pause();
-         });
       } else {
         //audioPlayer.resume();
       }}catch(e){print(e);}

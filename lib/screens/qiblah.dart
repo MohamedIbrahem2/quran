@@ -47,17 +47,17 @@ class QiblahCompassWidget extends StatelessWidget {
           alignment: Alignment.center,
           children: <Widget>[
             Transform.rotate(
-              angle: ((qiblahDirection.direction ?? 0) * (pi / 180) * -1),
+              angle: ((qiblahDirection?.direction ?? 0) * (pi / 180) * -1),
               child: _compassSvg,
             ),
             Transform.rotate(
-              angle: ((qiblahDirection.qiblah ?? 0) * (pi / 180) * -1),
+              angle: ((qiblahDirection?.qiblah ?? 0) * (pi / 180) * -1),
               alignment: Alignment.center,
               child: _needleSvg,
             ),
             Positioned(
               bottom: 8,
-              child: Text("${qiblahDirection.offset.toStringAsFixed(3)}°"),
+              child: Text("${qiblahDirection?.offset.toStringAsFixed(3)}°"),
             )
           ],
         );

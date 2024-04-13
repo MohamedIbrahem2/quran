@@ -34,7 +34,7 @@ class FehresPages extends StatelessWidget{
           child: Stack(
         children: <Widget>[
           ColorFiltered(
-            colorFilter:ColorFilter.mode(Colors.orange[100], BlendMode.color),
+            colorFilter:ColorFilter.mode(Colors.orange[100]!, BlendMode.color),
                     child: Container(
               height: 70,
               width: MediaQuery.of(context).size.width,
