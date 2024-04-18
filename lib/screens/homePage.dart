@@ -11,6 +11,7 @@ import 'package:quran/lists/listOfParts.dart';
 import 'package:quran/lists/pagenumFunc.dart';
 import 'package:quran/lists/swraNameList.dart';
 import 'package:quran/main.dart';
+import 'package:quran/screens/adhan.dart';
 import 'package:quran/screens/ajzaa.dart';
 import 'package:quran/screens/dialog/goDialog.dart';
 import 'package:quran/screens/dialog/savedialog.dart';
@@ -18,7 +19,7 @@ import 'package:quran/screens/doaa.dart';
 import 'package:quran/screens/fehresPages.dart';
 import 'package:choice/choice.dart';
 import 'package:quran/screens/our.dart';
-import 'package:quran/screens/qiblah.dart';
+import 'package:quran/qiblah/qiblah.dart';
 import 'package:quran/screens/tafseer.dart';
 import 'package:quran/search.dart';
 import 'package:share/share.dart';
@@ -80,21 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
         false;
   }
 
-  /*List<S2Choice<int>> options = [
-
-  S2Choice<int>(value: 1, title: 'الشيخ ماهر المعيقلي'),
-    S2Choice<int>(value: 1, title: 'الشيخ عبدالباسط (مجود)'),
-    S2Choice<int>(value: 1, title: 'الشيخ عبدالباسط (مرتل)'),
-    S2Choice<int>(value: 1, title: 'الشيخ أبوبكر الشاطري'),
-    S2Choice<int>(value: 1, title: 'الشيخ عبدالرحمن السديسي'),
-    S2Choice<int>(value: 1, title: 'الشيخ مشاري العفايسي'),
-    S2Choice<int>(value: 1, title: 'الشيخ محمود الحصري (مرتل)'),
-    S2Choice<int>(value: 1, title: 'الشيخ محمود الحصري (مجود)'),
-  S2Choice<int>(value: 1, title: 'الشيخ المنشاوي(مجود)'),
-  S2Choice<int>(value: 1, title: 'الشيخ محمد ايوب'),
-];
-
-   */
   List<String> choices = [
   'الشيخ ماهر المعيقلي',
   'الشيخ عبدالباسط (مجود)',
@@ -119,34 +105,24 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (appState.getQareaa) {
       case 1:
         return "https://aswaatulqurraa.com/files/Pages/Maher%20al%20Muaiqly%20(15%20Liner)/$verse/$page.mp3";
-        break;
       case 2:
         return "https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/PageMp3s/Page$page.mp3";
-        break;
       case 3:
         return "https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 4:
         return "https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 5:
         return "https://everyayah.com/data/Abdurrahmaan_As-Sudais_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 6:
         return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 7:
         return "https://everyayah.com/data/Husary_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 8:
         return "https://everyayah.com/data/Husary_Mujawwad_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 9:
         return "https://everyayah.com/data/Minshawy_Mujawwad_64kbps/PageMp3s/Page$page.mp3";
-        break;
       case 10:
         return "https://everyayah.com/data/Muhammad_Ayyoub_128kbps/PageMp3s/Page$page.mp3";
-        break;
       default:
       return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
     }
@@ -159,9 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
       initialPage: initialPage - 1,
     );
     String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
-    // int swraNumber = listOfNameSwraPerPages[initialPage - 1] + 1;
     int partNumber = listOfPartPerPage[initialPage - 1]+1;
-    // url = "https://www.quranpagesmp3.com/MP3/pgs/$thePageNumber-$theswraNumber.mp3";
     url = soundUrl("$partNumber", "$thePageNumber");
     appState.first ? playPause() : null;
     page = initialPage;
@@ -189,7 +163,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 PageView.builder(
                 reverse: true,
-                  //scrollDirection: MediaQuery.of(context).size.width>MediaQuery.of(context).size.height?Axis.vertical:Axis.horizontal,
                     controller: _pageController,
                     onPageChanged: (i) async {
                         String thePageNumber = i+1<10 ? "00${i+1}": i+1>=10 && i+1<100 ? "0${i+1}":"${i+1}";
@@ -246,13 +219,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     : Container(),
                 show ?
                 Positioned(
-                  top:35,
+                  top:34,
                   right: 0,
                 child: Container(
-                  height:210,
-                  width:50,
+                  height:50,
+                  width:210,
                   color: Colors.black87,
-                  child: Column(
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(icon: Icon(Icons.fast_rewind , color:Colors.white , size: 30),
@@ -260,8 +233,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     if(possition.inSeconds.toInt() - 10 > 0) { audioPlayer.seek(Duration(seconds: possition.inSeconds.toInt() - 10 ));}
                     },) ,
                     Container(
-                                        height: 1,
-                                        width: 40,
+                                        height: 40,
+                                        width: 1,
                                         color: Colors.white30,
                                       ),
                     IconButton(onPressed: ()  {
@@ -273,8 +246,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: isplay == false && "${audioPlayer.state}" != "AudioPlayerState.PLAYING"? Colors.green:Colors.white60,
                       ),),
                       Container(
-                                        height: 1,
-                                        width: 40,
+                                        height: 40,
+                                        width: 1,
                                         color: Colors.white30,
                                       ),
                       IconButton(icon: Icon(Icons.fast_forward , color:Colors.white , size: 30),
@@ -282,8 +255,8 @@ class _MyHomePageState extends State<MyHomePage> {
                      if(possition.inSeconds.toInt() + 10 < duration.inSeconds.toInt()) {audioPlayer.seek(Duration(seconds: possition.inSeconds.toInt() + 10 ));}
                     },) ,
                     Container(
-                                        height: 1,
-                                        width: 40,
+                                        height: 40,
+                                        width: 1,
                                         color: Colors.white30,
                                       ),
                     IconButton(icon: Icon(Icons.stop , color:Colors.red[900] , size: 30),
@@ -350,7 +323,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ):Container(),
                 show
                     ? Positioned(
-                        top: 35,
+                        top: 84,
+                        right: 0,
                         child: Container(
                           padding: EdgeInsets.all(10),
                           height: MediaQuery.of(context).size.height * 0.63,
@@ -407,8 +381,42 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      Adhan()));
+                                        },
+                                        child: Container(
+                                          width: 170,
+                                          color: Colors.transparent,
+                                          child: Row(
+                                            children: <Widget>[
+                                              Icon(
+                                                Icons.search,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                "مواقيت الصلاة",
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 1,
+                                        width: 170,
+                                        color: Colors.white30,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
                                            //getLocation();
-                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>QiblahGet()));
+                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>qiblah()));
                                         },
                                         child: Container(
                                           width: 170,
