@@ -27,7 +27,6 @@ dependencies:
   shared_preferences: ^2.2.2
   provider: ^6.1.2
   flutter_easyloading: ^3.0.0
-  smart_select: ^4.3.3
   choice: ^2.3.1
   # flutter_adhan: ^1.0.1
   # adhan: ^1.1.16
@@ -55,6 +54,11 @@ dependencies:
   geolocator: ^11.0.0
   google_maps_flutter: ^2.6.0
   adhan: ^2.0.0+1
+  kf_drawer: ^1.2.1
+  animated_text_kit: ^4.2.2
+  liquid_progress_indicator: ^0.4.0
+  location: ^6.0.1
+  geocoding: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,6 +80,7 @@ flutter:
     - data/data.json
     - data/tafseer.json
     - images/
+    - assets/sound/
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -2,6 +2,8 @@
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/fehres.dart';
 import 'package:quran/lists/listImage.dart';
@@ -127,9 +129,24 @@ class _MyHomePageState extends State<MyHomePage> {
       return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
     }
   }
+   double lat = 0,lang = 0;
+  Future<Position> locateUser() async {
+    return Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
+  getUserLocation() async {
+    Position currentLocation = await locateUser();
+    setState(() {
+      LatLng _center = LatLng(currentLocation.latitude, currentLocation.longitude);
+      lat = _center.latitude;
+      lang = _center.longitude;
+
+    });
+  }
 
   @override
   void initState() {
+    getUserLocation();
     AppState appState = Provider.of<AppState>(context,listen: false);
     _pageController = PageController(
       initialPage: initialPage - 1,
@@ -385,7 +402,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      Adhan()));
+                                                      Adhan(lat: lat, lang: lang,)));
                                         },
                                         child: Container(
                                           width: 170,
