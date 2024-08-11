@@ -410,7 +410,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           child: Row(
                                             children: <Widget>[
                                               Icon(
-                                                Icons.search,
+                                                Icons.mosque_outlined,
                                                 size: 25,
                                                 color: Colors.white,
                                               ),

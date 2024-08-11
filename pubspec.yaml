@@ -59,6 +59,9 @@ dependencies:
   liquid_progress_indicator: ^0.4.0
   location: ^6.0.1
   geocoding: ^3.0.0
+  flutter_local_notifications: ^17.2.2
+  permission_handler: ^11.3.1
+  workmanager: ^0.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,6 +84,7 @@ flutter:
     - data/tafseer.json
     - images/
     - assets/sound/
+    - android/app/src/main/res/raw/
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

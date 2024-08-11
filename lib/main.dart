@@ -1,17 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/screens/homePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
+import 'Model/notifcation_prayer.dart';
 import 'screens/HomeView.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:workmanager/workmanager.dart';
+import 'package:timezone/timezone.dart' as tz;
 
-void main() { 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+  void callbackDispatcher() {
+    Workmanager().executeTask((task, inputData) {
+      // Call the method to schedule notifications
+      schedulePrayerNotifications();
+      return Future.value(true);
+    });
+  }
+  Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: false,  // Set to false for production
+  );
+
+  // Schedule the task to run daily
+  Workmanager().registerPeriodicTask(
+    "dailyPrayerNotification",
+    "dailyPrayerNotificationTask",
+    frequency: Duration(days: 1), // Run daily
+  );
+  await requestNotificationPermission();
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  schedulePrayerNotifications();
   runApp(
   ChangeNotifierProvider<AppState>(
       create: (_) => AppState(),
       child:MyApp()));}
+Future<void> requestNotificationPermission() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+}
 class AppState with ChangeNotifier {
    AppState();
      int pageOfSaved = 0;
