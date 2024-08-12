@@ -15,6 +15,7 @@ import 'package:quran/lists/swraNameList.dart';
 import 'package:quran/main.dart';
 import 'package:quran/screens/adhan.dart';
 import 'package:quran/screens/ajzaa.dart';
+import 'package:quran/screens/azkar/azkar.dart';
 import 'package:quran/screens/dialog/goDialog.dart';
 import 'package:quran/screens/dialog/savedialog.dart';
 import 'package:quran/screens/doaa.dart';
@@ -129,10 +130,10 @@ class _MyHomePageState extends State<MyHomePage> {
       return "https://everyayah.com/data/Alafasy_64kbps/PageMp3s/Page$page.mp3";
     }
   }
-   double lat = 0,lang = 0;
+    double? lat,lang;
   Future<Position> locateUser() async {
     return Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.low);
   }
   getUserLocation() async {
     Position currentLocation = await locateUser();
@@ -146,7 +147,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    getUserLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      getUserLocation();
+    });
     AppState appState = Provider.of<AppState>(context,listen: false);
     _pageController = PageController(
       initialPage: initialPage - 1,
@@ -344,7 +347,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         right: 0,
                         child: Container(
                           padding: EdgeInsets.all(10),
-                          height: MediaQuery.of(context).size.height * 0.63,
+                          height: MediaQuery.of(context).size.height * 0.76,
                           width: 180,
                           color: Colors.black87,
                           child: SingleChildScrollView(
@@ -398,11 +401,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                       GestureDetector(
                                         onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Adhan(lat: lat, lang: lang,)));
+                                          if(lat == null || lang == null){
+                                            Center(child: CircularProgressIndicator());
+                                          }else{
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Adhan(lat: lat!, lang: lang!,)));
+                                          }
+
                                         },
                                         child: Container(
                                           width: 170,
@@ -448,6 +456,37 @@ class _MyHomePageState extends State<MyHomePage> {
                                               SizedBox(width: 5),
                                               Text(
                                                 "إتجاه القبلة",
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 1,
+                                        width: 170,
+                                        color: Colors.white30,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          //getLocation();
+                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>Azkar()));
+                                        },
+                                        child: Container(
+                                          width: 170,
+                                          color: Colors.transparent,
+                                          child: Row(
+                                            children: <Widget>[
+                                              Icon(
+                                                Icons.calendar_month,
+                                                size: 25,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                "الأذكار",
                                                 style: TextStyle(
                                                     fontSize: 18,
                                                     color: Colors.white),

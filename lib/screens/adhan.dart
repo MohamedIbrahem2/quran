@@ -26,11 +26,8 @@ class _Home_PageState extends State<Adhan> {
   String? country = '';
   int num = 0;
   TimeOfDay timeOfDay = TimeOfDay.now();
-  late Timer timer;
   bool isLoading = true;
-  String? _error;
   Future<void> getUserCountry() async {
-    try {
       List<Placemark> placeMark =
       await placemarkFromCoordinates(widget.lat, widget.lang);
       print(placeMark[0].country);
@@ -54,12 +51,6 @@ class _Home_PageState extends State<Adhan> {
       }
         isLoading = false;
       });
-    }catch (e) {
-      setState(() {
-        _error = e.toString();
-        isLoading = false;
-      });
-    }
 
   }
 
@@ -125,13 +116,11 @@ class _Home_PageState extends State<Adhan> {
     });
 
     _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-      setState(() {
         _timeRemaining = nextPrayerTime.difference(DateTime.now());
         if (_timeRemaining.isNegative) {
           _timer!.cancel();
           _startCountdown();
         }
-      });
     });
   }
 
@@ -145,7 +134,7 @@ class _Home_PageState extends State<Adhan> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    timer.cancel();
+    _timer?.cancel();
   }
 
   @override
@@ -154,8 +143,7 @@ class _Home_PageState extends State<Adhan> {
     double height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
-        body: isLoading  ? Center(child: CircularProgressIndicator())
-            : _error != null ? Text('خطأ: $_error') :
+        body: isLoading  ? Center(child: CircularProgressIndicator()):
         Container(
           decoration: BoxDecoration(
             color: const Color(0xff7c94b6),
@@ -237,8 +225,8 @@ class _Home_PageState extends State<Adhan> {
                 ],
               ),
               Positioned(
-                bottom: 100,
-                left: 100,
+                bottom: height * 0.06,
+                left: height * 0.14,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [

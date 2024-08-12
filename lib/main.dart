@@ -15,16 +15,16 @@ import 'package:timezone/timezone.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) {
+    // Call the method to schedule notifications
+    schedulePrayerNotifications();
+    return Future.value(true);
+  });
+}
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
-  void callbackDispatcher() {
-    Workmanager().executeTask((task, inputData) {
-      // Call the method to schedule notifications
-      schedulePrayerNotifications();
-      return Future.value(true);
-    });
-  }
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: false,  // Set to false for production
@@ -44,6 +44,15 @@ void main() async{
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
   );
+  LocationPermission permission;
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.deniedForever) {
+      // Handle the case where the user denied permissions forever
+    }
+  }
+
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   schedulePrayerNotifications();
   runApp(

@@ -1431,7 +1431,7 @@ class Fehres extends StatelessWidget {
                         width: MediaQuery.of(context).size.width * .13,
                         color: Colors.black54,
                         child: Text(
-                          '112',
+                          '118',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
