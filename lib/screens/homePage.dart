@@ -347,7 +347,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         right: 0,
                         child: Container(
                           padding: EdgeInsets.all(10),
-                          height: MediaQuery.of(context).size.height * 0.76,
                           width: 180,
                           color: Colors.black87,
                           child: SingleChildScrollView(
@@ -358,7 +357,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   alignment: Alignment.center,
                                   //padding: EdgeInsets.only(right:10,left:10),
                                   width: 170,
-                                  height: 310,
+                                  height: MediaQuery.of(context).size.height * 0.42,
                                   child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -595,23 +594,49 @@ class _MyHomePageState extends State<MyHomePage> {
                                           ),
                                         ),
                                       ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            show = false;
-                                          });
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                CustomSaveDialog(
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ))
+                    : Container(),
+                show
+                    ? Positioned(
+                    top: 34,
+                    left: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      width: 180,
+                      color: Colors.black87,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              alignment: Alignment.center,
+                              //padding: EdgeInsets.only(right:10,left:10),
+                              width: 170,
+                              height: MediaQuery.of(context).size.height * 0.42,
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        show = false;
+                                      });
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            CustomSaveDialog(
                                               page: page,
                                               title:
-                                                  "هل تود تغيير مكان العلامة ؟",
+                                              "هل تود تغيير مكان العلامة ؟",
                                               description: "",
                                               buttonText: "نعم",
                                               image: Image(
@@ -620,77 +645,77 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 fit: BoxFit.fill,
                                               ),
                                             ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.bookmark_border,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "حفظ علامة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 170,
+                                      color: Colors.transparent,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.bookmark_border,
+                                            size: 22,
+                                            color: Colors.white,
                                           ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          _pageController.animateToPage(
-                                            appState.getPageOfSaved,
-                                            duration:
-                                                Duration(milliseconds: 350),
-                                            curve: Curves.easeIn,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.bookmark_border,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "إنتقال إلى علامة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "حفظ علامة",
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white),
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    width: 170,
+                                    color: Colors.white30,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _pageController.animateToPage(
+                                        appState.getPageOfSaved,
+                                        duration:
+                                        Duration(milliseconds: 350),
+                                        curve: Curves.easeIn,
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 170,
+                                      color: Colors.transparent,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.bookmark_border,
+                                            size: 22,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "إنتقال إلى علامة",
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white),
+                                          ),
+                                        ],
                                       ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                CustomGoDialog(
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    width: 170,
+                                    color: Colors.white30,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            CustomGoDialog(
                                               title:
-                                                  "رقم الصفحة التي تود الذهاب اليها",
+                                              "رقم الصفحة التي تود الذهاب اليها",
                                               buttonText: "ذهاب",
                                               image: Image(
                                                 image: AssetImage(
@@ -698,300 +723,303 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 fit: BoxFit.fill,
                                               ),
                                             ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.exit_to_app,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "إنتقال إلى صفحة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 170,
+                                      color: Colors.transparent,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.exit_to_app,
+                                            size: 22,
+                                            color: Colors.white,
                                           ),
-                                        ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "إنتقال إلى صفحة",
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(height: 1),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  height: 1,
-                                  width: 170,
-                                  color: Colors.white30,
-                                ),
-                                Container(
-                                  //padding: EdgeInsets.only(right:10,left:10),
-                                  width: MediaQuery.of(context).size.width,
-                                  height: 120,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Fehres()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.list,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الفهرس",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Fehress()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.spa,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الاجزاء",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      FehresPages()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.library_books,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الصفحات",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      // Container(
-                                      //   height: 1,
-                                      //   width: 170,
-                                      //   color: Colors.white30,
-                                      // ),
-                                      // GestureDetector(
-                                      //   onTap: () {
-                                      //     setState(() {
-                                      //       getAudio = true;
-                                      //     });
-                                      //   },
-                                      //   child: Container(
-                                      //     width: 170,
-                                      //     color: Colors.transparent,
-                                      //     child: Row(
-                                      //       children: <Widget>[
-                                      //         Icon(
-                                      //           Icons.audiotrack,
-                                      //           size: 25,
-                                      //           color: Colors.white,
-                                      //         ),
-                                      //         SizedBox(width: 10),
-                                      //         Text(
-                                      //           "تلاوة الصفحة",
-                                      //           style: TextStyle(
-                                      //               fontSize: 19,
-                                      //               color: Colors.white),
-                                      //         ),
-                                      //       ],
-                                      //     ),
-                                      //   ),
-                                      // ),
-                                    ],
+                                  SizedBox(height: 1),
+                                  Container(
+                                    height: 1,
+                                    width: 170,
+                                    color: Colors.white30,
                                   ),
-                                ),
-                                Container(
-                                  height: 1,
-                                  width: 170,
-                                  color: Colors.white30,
-                                ),
-                                Container(
-                                  //padding: EdgeInsets.only(right:10,left:10),
-                                  width: MediaQuery.of(context).size.width,
-                                  height: 110,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Doaa()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.import_contacts,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "دعاء الختم",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                  SizedBox(height: 1),
+                                  Container(
+                                    //padding: EdgeInsets.only(right:10,left:10),
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 120,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Fehres()));
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.list,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "الفهرس",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          final RenderBox box =
-                                              context.findRenderObject() as RenderBox;
-                                          Share.share(
-                                              "وددت مشاركة تطبيق المصحف هذا معك \n https://play.google.com/store/apps/details?id=giga.quran",
-                                              subject:
-                                                  "وددت مشاركة تطبيق المصحف هذا معك",
-                                              sharePositionOrigin:
-                                                  box.localToGlobal(
-                                                          Offset.zero) &
-                                                      box.size);
-                                        },
-                                        child: Container(
+                                        Container(
+                                          height: 1,
                                           width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.share,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "مشاركة",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                          color: Colors.white30,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Fehress()));
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.spa,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "الاجزاء",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      A3mal()));
-                                        },
-                                        child: Container(
+                                        Container(
+                                          height: 1,
                                           width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.group,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "تواصل معنا",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
+                                          color: Colors.white30,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        FehresPages()));
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.library_books,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "الصفحات",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        // Container(
+                                        //   height: 1,
+                                        //   width: 170,
+                                        //   color: Colors.white30,
+                                        // ),
+                                        // GestureDetector(
+                                        //   onTap: () {
+                                        //     setState(() {
+                                        //       getAudio = true;
+                                        //     });
+                                        //   },
+                                        //   child: Container(
+                                        //     width: 170,
+                                        //     color: Colors.transparent,
+                                        //     child: Row(
+                                        //       children: <Widget>[
+                                        //         Icon(
+                                        //           Icons.audiotrack,
+                                        //           size: 25,
+                                        //           color: Colors.white,
+                                        //         ),
+                                        //         SizedBox(width: 10),
+                                        //         Text(
+                                        //           "تلاوة الصفحة",
+                                        //           style: TextStyle(
+                                        //               fontSize: 19,
+                                        //               color: Colors.white),
+                                        //         ),
+                                        //       ],
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(height: 1),
+                                  Container(
+                                    height: 1,
+                                    width: 170,
+                                    color: Colors.white30,
+                                  ),
+                                  SizedBox(height: 1),
+                                  Container(
+                                    //padding: EdgeInsets.only(right:10,left:10),
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 110,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Doaa()));
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.import_contacts,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "دعاء الختم",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 1,
+                                          width: 170,
+                                          color: Colors.white30,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            final RenderBox box =
+                                            context.findRenderObject() as RenderBox;
+                                            Share.share(
+                                                "وددت مشاركة تطبيق المصحف هذا معك \n https://play.google.com/store/apps/details?id=giga.quran",
+                                                subject:
+                                                "وددت مشاركة تطبيق المصحف هذا معك",
+                                                sharePositionOrigin:
+                                                box.localToGlobal(
+                                                    Offset.zero) &
+                                                box.size);
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.share,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "مشاركة",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 1,
+                                          width: 170,
+                                          color: Colors.white30,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        A3mal()));
+                                          },
+                                          child: Container(
+                                            width: 170,
+                                            color: Colors.transparent,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  Icons.group,
+                                                  size: 25,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  "تواصل معنا",
+                                                  style: TextStyle(
+                                                      fontSize: 19,
+                                                      color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ))
+                          ],
+                        ),
+                      ),
+                    ))
                     : Container()
               ],
             ),

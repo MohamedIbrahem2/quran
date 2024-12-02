@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:adhan/adhan.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:intl/intl.dart' hide TextDirection;
+import 'package:intl/intl.dart' as intl hide TextDirection;
 import 'package:kf_drawer/kf_drawer.dart';
-import '../Model/Functions.dart';
-import '../Model/UserSimplePreferences.dart';
-import '../Model/Variable_declarations.dart';
-import 'package:intl/intl.dart' as intl;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:quran/Model/Variable_declarations.dart';
 
 class Adhan extends KFDrawerContent {
   final double lat, lang;
@@ -16,238 +15,220 @@ class Adhan extends KFDrawerContent {
   Adhan({required this.lat, required this.lang});
 
   @override
-  State<Adhan> createState() => _Home_PageState();
+  State<Adhan> createState() => _AdhanState();
 }
 
-class _Home_PageState extends State<Adhan> {
+class _AdhanState extends State<Adhan> {
   Timer? _timer;
   Duration _timeRemaining = Duration();
   String _nextPrayer = "";
   String? country = '';
-  int num = 0;
-  TimeOfDay timeOfDay = TimeOfDay.now();
   bool isLoading = true;
-  Future<void> getUserCountry() async {
-      List<Placemark> placeMark =
-      await placemarkFromCoordinates(widget.lat, widget.lang);
-      print(placeMark[0].country);
-      country = placeMark[0].country;
+  bool _isNotificationEnabled = true;
+
+  PrayerTimes? prayerTimes;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePrayerTimes();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _initializePrayerTimes() async {
+    try {
+      List<Placemark> placeMarks = await placemarkFromCoordinates(widget.lat, widget.lang);
+      country = placeMarks[0].country ?? '';
+      final method = _getCalculationMethod(country);
+      final params = method.getParameters();
+      params.madhab = Madhab.shafi;
+
+      final coordinates = Coordinates(widget.lat, widget.lang);
+      prayerTimes = PrayerTimes.today(coordinates, params);
+
+      _startCountdown();
+    } catch (e) {
+      print("Error initializing prayer times: $e");
+    } finally {
       setState(() {
-      if (country == "Egyptian") {
-        num = 1;
-        country = 'مصر';
-      } else if (country == "Saudi Arabia") {
-        country = 'السعوديه';
-        num = 2;
-      } else if (country == "Qatar") {
-        country = 'قطر';
-        num = 3;
-      } else if (country == "United Arab Emirates") {
-        country = 'الأمارات';
-        num = 4;
-      } else if (country == "Kuwait") {
-        country = 'الكويت';
-        num = 5;
-      }
         isLoading = false;
       });
+    }
+  }
 
+  CalculationMethod _getCalculationMethod(String? country) {
+    switch (country) {
+      case "Saudi Arabia":
+        return CalculationMethod.umm_al_qura;
+      case "Qatar":
+        return CalculationMethod.qatar;
+      case "United Arab Emirates":
+        return CalculationMethod.dubai;
+      case "Kuwait":
+        return CalculationMethod.kuwait;
+      default:
+        return CalculationMethod.egyptian;
+    }
   }
 
   void _startCountdown() {
-    DateTime now = DateTime.now();
-    DateTime? nextPrayerTime;
+    final now = DateTime.now();
+    final nextPrayer = _getNextPrayerTime(now);
+    if (nextPrayer != null) {
+      setState(() {
+        _nextPrayer = nextPrayer.name;
+        _timeRemaining = nextPrayer.time.difference(now);
+      });
 
-    if (now.isBefore(getPrayerTime().fajr)) {
-      nextPrayerTime = getPrayerTime().fajr;
-      _nextPrayer = "الفجر";
-    } else if (now.isBefore(getPrayerTime().dhuhr)) {
-      nextPrayerTime = getPrayerTime().dhuhr;
-      _nextPrayer = "الظهر";
-    } else if (now.isBefore(getPrayerTime().asr)) {
-      nextPrayerTime = getPrayerTime().asr;
-      _nextPrayer = "العصر";
-    } else if (now.isBefore(getPrayerTime().maghrib)) {
-      nextPrayerTime = getPrayerTime().maghrib;
-      _nextPrayer = "المغرب";
-    } else if (now.isBefore(getPrayerTime().isha)) {
-      nextPrayerTime = getPrayerTime().isha;
-      _nextPrayer = "العشاء";
-    } else {
-      nextPrayerTime = getPrayerTime().fajr.add(const Duration(days: 1));
-      _nextPrayer = "الفجر";
-    }
-    // Check if the adjusted time is still in the future
-    if (now.isAfter(nextPrayerTime)) {
-      // If the adjusted time has passed, skip to the next prayer
-      _skipToNextPrayer(now);
-    } else {
-      _setTimer(nextPrayerTime, now);
-    }
-  }
-
-  void _skipToNextPrayer(DateTime now) {
-    // Loop through prayers and find the first one that's in the future
-    DateTime? nextPrayerTime;
-
-    if (now.isBefore(getPrayerTime().dhuhr)) {
-      nextPrayerTime = getPrayerTime().dhuhr;
-      _nextPrayer = "الظهر";
-    } else if (now.isBefore(getPrayerTime().asr)) {
-      nextPrayerTime = getPrayerTime().asr;
-      _nextPrayer = "العصر";
-    } else if (now.isBefore(getPrayerTime().maghrib)) {
-      nextPrayerTime = getPrayerTime().maghrib;
-      _nextPrayer = "المغرب";
-    } else if (now.isBefore(getPrayerTime().isha)) {
-      nextPrayerTime = getPrayerTime().isha;
-      _nextPrayer = "العشاء";
-    } else {
-      nextPrayerTime = getPrayerTime().fajr.add(Duration(days: 1));
-      _nextPrayer = "الفجر";
-    }
-
-    _setTimer(nextPrayerTime, now);
-  }
-
-  void _setTimer(DateTime nextPrayerTime, DateTime now) {
-    setState(() {
-      _timeRemaining = nextPrayerTime.difference(now);
-    });
-
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-        _timeRemaining = nextPrayerTime.difference(DateTime.now());
-        if (_timeRemaining.isNegative) {
-          _timer!.cancel();
+      _timer = Timer.periodic(Duration(seconds: 1), (_) {
+        final remaining = nextPrayer.time.difference(DateTime.now());
+        if (remaining.isNegative) {
+          _timer?.cancel();
           _startCountdown();
+        } else {
+          setState(() {
+            _timeRemaining = remaining;
+          });
         }
+      });
+    }
+  }
+
+  _Prayer _getNextPrayerTime(DateTime now) {
+    if (prayerTimes == null) return _Prayer(name: "الفجر", time: now.add(Duration(days: 1)));
+
+    final prayers = {
+      "الفجر": prayerTimes!.fajr,
+      "الظهر": prayerTimes!.dhuhr,
+      "العصر": prayerTimes!.asr,
+      "المغرب": prayerTimes!.maghrib,
+      "العشاء": prayerTimes!.isha,
+    };
+
+    for (var entry in prayers.entries) {
+      if (now.isBefore(entry.value)) {
+        return _Prayer(name: entry.key, time: entry.value);
+      }
+    }
+    // If no future prayer found, next is Fajr of the next day
+    return _Prayer(name: "الفجر", time: prayers["الفجر"]!.add(Duration(days: 1)));
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isNotificationEnabled = prefs.getBool('isNotificationEnabled') ?? true;
     });
   }
 
-  initState() {
-    super.initState();
-     getUserCountry();
-    _startCountdown();
+  Future<void> _saveNotificationPreference(bool isEnabled) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isNotificationEnabled', isEnabled);
+  }
+
+  Future<void> _enableNotifications() async {
+    await Workmanager().registerPeriodicTask(
+      "dailyPrayerNotification",
+      "dailyPrayerNotificationTask",
+      frequency: Duration(days: 1),
+    );
+  }
+
+  Future<void> _disableNotifications() async {
+    await Workmanager().cancelByUniqueName("dailyPrayerNotification");
+    FlutterLocalNotificationsPlugin().cancelAll();
+  }
+
+  void _onToggle(bool value) async {
+    setState(() {
+      _isNotificationEnabled = value;
+    });
+    await _saveNotificationPreference(value);
+
+    if (value) {
+      await _enableNotifications();
+    } else {
+      await _disableNotifications();
+    }
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+
     return SafeArea(
       child: Scaffold(
-        body: isLoading  ? Center(child: CircularProgressIndicator()):
-        Container(
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Container(
           decoration: BoxDecoration(
             color: const Color(0xff7c94b6),
             image: DecorationImage(
-              image: new ExactAssetImage(backgroundimage),
-              colorFilter: new ColorFilter.mode(
-                  background_color, BlendMode.dstATop),
+              image: ExactAssetImage(backgroundimage),
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.6),
+                BlendMode.darken,
+              ),
               fit: BoxFit.cover,
             ),
           ),
           child: Stack(
             children: [
-              Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Center(
-                          child: Column(
-                        children: [
-                          SizedBox(
-                            height: height * 0.040,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: height * 0.007,
-                                horizontal: width * 0.009),
-                            child: Column(
-                              children: [
-                                card(
-                                    "الفجر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().fajr)),
-                                card(
-                                    "الشروق",
-                                    intl.DateFormat.jm().format(
-                                        getPrayerTime().sunrise)),
-                                card(
-                                    "الظهر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().dhuhr)),
-                                card(
-                                    "العصر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().asr)),
-                                card(
-                                    "المغرب",
-                                    intl.DateFormat.jm().format(
-                                        getPrayerTime().maghrib)),
-                                card(
-                                    "العشاء",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().isha)),
-                                Card(
-                                  color: Colors.black,
-                                  elevation: 5,
-                                  child: ListTile(
-                                    trailing: Text(
-                                      "موقعك الحالي هو :",
-                                      textDirection: TextDirection.rtl,
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    title: Text(
-                                      country!,
-                                      style: TextStyle(
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ))
-                    ],
-                  ),
-                ],
-              ),
-              Positioned(
-                bottom: height * 0.06,
-                left: height * 0.14,
+              Positioned.fill(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'الأذان القادم صلاه $_nextPrayer',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white),
+                    SizedBox(height: height * 0.04),
+                    ..._buildPrayerCards(),
+                    Card(
+                      color: Colors.black,
+                      elevation: 5,
+                      child: ListTile(
+                        trailing: Text(
+                          "موقعك الحالي هو :",
+                          textDirection: TextDirection.rtl,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        title: Text(
+                          country ?? '',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                    Text(
-                      '${_timeRemaining.inHours.remainder(24).toString().padLeft(2, '0')}:${_timeRemaining.inMinutes.remainder(60).toString().padLeft(2, '0')}:${_timeRemaining.inSeconds.remainder(60).toString().padLeft(2, '0')}',
-                      style: TextStyle(
-                          fontSize: 23,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    )
                   ],
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Card(
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "تشغيل/ايقاف تنبيهات مواقيت الصلاه",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Switch(
+                          value: _isNotificationEnabled,
+                          onChanged: _onToggle,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -257,62 +238,51 @@ class _Home_PageState extends State<Adhan> {
     );
   }
 
-  Widget card(name, time) {
+  List<Widget> _buildPrayerCards() {
+    if (prayerTimes == null) return [];
+
+    final prayers = {
+      "الفجر": prayerTimes!.fajr,
+      "الشروق": prayerTimes!.sunrise,
+      "الظهر": prayerTimes!.dhuhr,
+      "العصر": prayerTimes!.asr,
+      "المغرب": prayerTimes!.maghrib,
+      "العشاء": prayerTimes!.isha,
+    };
+
+    return prayers.entries
+        .map((entry) => _buildCard(entry.key, intl.DateFormat.jm().format(entry.value)))
+        .toList();
+  }
+
+  Widget _buildCard(String name, String time) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 70,
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       decoration: BoxDecoration(
-          color: Colors.black26, borderRadius: BorderRadius.circular(15)),
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             time,
-            style: TextStyle(
-              fontSize: 22,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 22, color: Colors.white),
           ),
           Text(
             name,
-            style: TextStyle(
-              fontSize: 22,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 22, color: Colors.white),
           ),
         ],
       ),
     );
   }
+}
 
-  PrayerTimes getPrayerTime() {
-    final myCoordinates = Coordinates(widget.lat, widget.lang);
+class _Prayer {
+  final String name;
+  final DateTime time;
 
-    var param;
-    switch (num) {
-      case 1:
-        param = CalculationMethod.egyptian.getParameters();
-        break;
-      case 2:
-        param = CalculationMethod.umm_al_qura.getParameters();
-        break;
-      case 3:
-        param = CalculationMethod.qatar.getParameters();
-        break;
-      case 4:
-        param = CalculationMethod.dubai.getParameters();
-        break;
-      case 5:
-        param = CalculationMethod.kuwait.getParameters();
-        break;
-      default:
-        param = CalculationMethod.egyptian.getParameters();
-    }
-    final params = param;
-    params.madhab = Madhab.shafi;
-    final prayerTimes = PrayerTimes.today(myCoordinates, params);
-    return prayerTimes;
-  }
+  _Prayer({required this.name, required this.time});
 }
