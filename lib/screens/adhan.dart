@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'package:adhan/adhan.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl hide TextDirection;
 import 'package:kf_drawer/kf_drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +12,8 @@ import 'package:workmanager/workmanager.dart';
 import 'package:quran/Model/Variable_declarations.dart';
 
 class Adhan extends KFDrawerContent {
-  final double lat, lang;
+  final double lat;
+  final double lang;
 
   Adhan({required this.lat, required this.lang});
 
@@ -20,136 +23,127 @@ class Adhan extends KFDrawerContent {
 
 class _AdhanState extends State<Adhan> {
   Timer? _timer;
-  Duration _timeRemaining = Duration();
+  Duration _timeRemaining = Duration.zero;
   String _nextPrayer = "";
   String? country = '';
   bool isLoading = true;
+
   bool _isNotificationEnabled = true;
 
-  PrayerTimes? prayerTimes;
+  Map<String, DateTime> _prayerTimes = {};
 
   @override
   void initState() {
     super.initState();
-    _initializePrayerTimes();
     _loadNotificationPreference();
+    _initializeWithPassedLocation();
   }
 
-  Future<void> _initializePrayerTimes() async {
+  Future<void> _initializeWithPassedLocation() async {
     try {
-      List<Placemark> placeMarks = await placemarkFromCoordinates(widget.lat, widget.lang);
-      country = placeMarks[0].country ?? '';
-      final method = _getCalculationMethod(country);
-      final params = method.getParameters();
-      params.madhab = Madhab.shafi;
+      List<Placemark> placeMarks = await placemarkFromCoordinates(
+        widget.lat,
+        widget.lang,
+      );
 
-      final coordinates = Coordinates(widget.lat, widget.lang);
-      prayerTimes = PrayerTimes.today(coordinates, params);
+      if (placeMarks.isNotEmpty) {
+        country = placeMarks[0].country ?? '';
+      }
+
+      await _fetchPrayerTimes(widget.lat, widget.lang);
 
       _startCountdown();
     } catch (e) {
-      print("Error initializing prayer times: $e");
+      debugPrint("Error initializing prayer times: $e");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
-  CalculationMethod _getCalculationMethod(String? country) {
-    switch (country) {
-      case "Saudi Arabia":
-        return CalculationMethod.umm_al_qura;
-      case "Qatar":
-        return CalculationMethod.qatar;
-      case "United Arab Emirates":
-        return CalculationMethod.dubai;
-      case "Kuwait":
-        return CalculationMethod.kuwait;
-      default:
-        return CalculationMethod.egyptian;
+  Future<void> _fetchPrayerTimes(double lat, double lng) async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final url = Uri.parse(
+      'https://api.aladhan.com/v1/timings/$timestamp'
+          '?latitude=$lat&longitude=$lng&method=5',
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed prayer API call");
     }
+
+    final jsonBody = jsonDecode(response.body);
+
+    if (jsonBody['code'] != 200) {
+      throw Exception("API returned error");
+    }
+
+    final timings = jsonBody['data']['timings'];
+
+    DateTime _parse(String t) {
+      final parts = t.split(':');
+      final hour = int.parse(parts[0]);
+      final min = int.parse(parts[1]);
+      final now = DateTime.now();
+      return DateTime(now.year, now.month, now.day, hour, min);
+    }
+
+    _prayerTimes = {
+      "الفجر": _parse(timings["Fajr"]),
+      "الشروق": _parse(timings["Sunrise"]),
+      "الظهر": _parse(timings["Dhuhr"]),
+      "العصر": _parse(timings["Asr"]),
+      "المغرب": _parse(timings["Maghrib"]),
+      "العشاء": _parse(timings["Isha"]),
+    };
+
+    setState(() {});
   }
 
   void _startCountdown() {
-    final now = DateTime.now();
-    final nextPrayer = _getNextPrayerTime(now);
-    if (nextPrayer != null) {
-      setState(() {
-        _nextPrayer = nextPrayer.name;
-        _timeRemaining = nextPrayer.time.difference(now);
-      });
+    if (_prayerTimes.isEmpty) return;
 
-      _timer = Timer.periodic(Duration(seconds: 1), (_) {
-        final remaining = nextPrayer.time.difference(DateTime.now());
-        if (remaining.isNegative) {
-          _timer?.cancel();
-          _startCountdown();
-        } else {
-          setState(() {
-            _timeRemaining = remaining;
-          });
-        }
-      });
-    }
+    final now = DateTime.now();
+    final next = _getNextPrayerTime(now);
+
+    _nextPrayer = next.name;
+    _timeRemaining = next.time.difference(now);
+
+    _timer?.cancel();
+    _timer = Timer.periodic(Duration(seconds: 1), (_) {
+      final remaining = next.time.difference(DateTime.now());
+      if (remaining.isNegative) {
+        _timer?.cancel();
+        _startCountdown();
+      } else {
+        setState(() => _timeRemaining = remaining);
+      }
+    });
   }
 
   _Prayer _getNextPrayerTime(DateTime now) {
-    if (prayerTimes == null) return _Prayer(name: "الفجر", time: now.add(Duration(days: 1)));
+    final entries = _prayerTimes.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
 
-    final prayers = {
-      "الفجر": prayerTimes!.fajr,
-      "الظهر": prayerTimes!.dhuhr,
-      "العصر": prayerTimes!.asr,
-      "المغرب": prayerTimes!.maghrib,
-      "العشاء": prayerTimes!.isha,
-    };
-
-    for (var entry in prayers.entries) {
-      if (now.isBefore(entry.value)) {
-        return _Prayer(name: entry.key, time: entry.value);
+    for (final p in entries) {
+      if (now.isBefore(p.value)) {
+        return _Prayer(name: p.key, time: p.value);
       }
     }
-    // If no future prayer found, next is Fajr of the next day
-    return _Prayer(name: "الفجر", time: prayers["الفجر"]!.add(Duration(days: 1)));
+
+    return _Prayer(
+      name: "الفجر",
+      time: _prayerTimes["الفجر"]!.add(Duration(days: 1)),
+    );
   }
 
   Future<void> _loadNotificationPreference() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isNotificationEnabled = prefs.getBool('isNotificationEnabled') ?? true;
-    });
-  }
-
-  Future<void> _saveNotificationPreference(bool isEnabled) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isNotificationEnabled', isEnabled);
-  }
-
-  Future<void> _enableNotifications() async {
-    await Workmanager().registerPeriodicTask(
-      "dailyPrayerNotification",
-      "dailyPrayerNotificationTask",
-      frequency: Duration(days: 1),
-    );
-  }
-
-  Future<void> _disableNotifications() async {
-    await Workmanager().cancelByUniqueName("dailyPrayerNotification");
-    FlutterLocalNotificationsPlugin().cancelAll();
-  }
-
-  void _onToggle(bool value) async {
-    setState(() {
-      _isNotificationEnabled = value;
-    });
-    await _saveNotificationPreference(value);
-
-    if (value) {
-      await _enableNotifications();
-    } else {
-      await _disableNotifications();
-    }
+    _isNotificationEnabled = prefs.getBool('isNotificationEnabled') ?? true;
   }
 
   @override
@@ -166,68 +160,93 @@ class _AdhanState extends State<Adhan> {
     return SafeArea(
       child: Scaffold(
         body: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Container(
           decoration: BoxDecoration(
-            color: const Color(0xff7c94b6),
             image: DecorationImage(
               image: ExactAssetImage(backgroundimage),
+              fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.6),
+                Colors.black.withOpacity(0.55),
                 BlendMode.darken,
               ),
-              fit: BoxFit.cover,
             ),
           ),
           child: Stack(
             children: [
-              Positioned.fill(
+              SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: height * 0.04),
+
                     ..._buildPrayerCards(),
-                    Card(
-                      color: Colors.black,
-                      elevation: 5,
-                      child: ListTile(
-                        trailing: Text(
-                          "موقعك الحالي هو :",
-                          textDirection: TextDirection.rtl,
-                          style: TextStyle(
+
+                    SizedBox(height: 10),
+
+                    Container(
+                      width: width * 0.9,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${country ?? ''}",
+                            style: const TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        title: Text(
-                          country ?? '',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                              fontSize: 18,
+                            ),
+                          ),
+                          const Text(
+                            " : موقعك الحالي هو",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
+                    SizedBox(height: height),
                   ],
                 ),
               ),
+
               Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
-                child: Card(
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "تشغيل/ايقاف تنبيهات مواقيت الصلاه",
-                          style: TextStyle(fontSize: 18),
+                bottom: 30,
+                left: width * 0.1,
+                right: width * 0.1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 25, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "الوقت المتبقي لصلاة $_nextPrayer",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Switch(
-                          value: _isNotificationEnabled,
-                          onChanged: _onToggle,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _formatDuration(_timeRemaining),
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -239,44 +258,57 @@ class _AdhanState extends State<Adhan> {
   }
 
   List<Widget> _buildPrayerCards() {
-    if (prayerTimes == null) return [];
+    final formatter = intl.DateFormat.jm();
 
-    final prayers = {
-      "الفجر": prayerTimes!.fajr,
-      "الشروق": prayerTimes!.sunrise,
-      "الظهر": prayerTimes!.dhuhr,
-      "العصر": prayerTimes!.asr,
-      "المغرب": prayerTimes!.maghrib,
-      "العشاء": prayerTimes!.isha,
-    };
-
-    return prayers.entries
-        .map((entry) => _buildCard(entry.key, intl.DateFormat.jm().format(entry.value)))
+    return _prayerTimes.entries
+        .map(
+          (entry) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: _buildCard(
+          entry.key,
+          formatter.format(entry.value),
+        ),
+      ),
+    )
         .toList();
   }
 
   Widget _buildCard(String name, String time) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.black26,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             time,
-            style: TextStyle(fontSize: 22, color: Colors.white),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Text(
             name,
-            style: TextStyle(fontSize: 22, color: Colors.white),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDuration(Duration d) {
+    String h = d.inHours.toString().padLeft(2, '0');
+    String m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    String s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return "$h:$m:$s";
   }
 }
 
