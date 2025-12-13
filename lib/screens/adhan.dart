@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl hide TextDirection;
 import 'package:kf_drawer/kf_drawer.dart';
 import 'package:quran/Model/Variable_declarations.dart';
+import 'package:adhan/adhan.dart';
 
 class Adhan extends KFDrawerContent {
   final double lat;
@@ -23,7 +22,6 @@ class _AdhanState extends State<Adhan> {
   Duration _timeRemaining = Duration.zero;
   String _nextPrayer = "";
 
-  /// NEW — detailed location
   String country = "";
   String adminArea = "";
   String city = "";
@@ -41,20 +39,20 @@ class _AdhanState extends State<Adhan> {
 
   Future<void> _initializeWithPassedLocation() async {
     try {
+      // Get human-readable location
       List<Placemark> placeMarks =
       await placemarkFromCoordinates(widget.lat, widget.lang);
 
       if (placeMarks.isNotEmpty) {
         final pm = placeMarks[0];
-
         country = pm.country ?? "";
         adminArea = pm.administrativeArea ?? "";
         city = pm.locality ?? "";
         district = pm.subLocality ?? "";
       }
 
-      await _fetchPrayerTimes(widget.lat, widget.lang);
-      _startCountdown();
+      // Calculate prayer times locally (no API)
+      await _calculatePrayerTimes(widget.lat, widget.lang);
     } catch (e) {
       debugPrint("Error initializing prayer times: $e");
     } finally {
@@ -62,48 +60,36 @@ class _AdhanState extends State<Adhan> {
     }
   }
 
-  Future<void> _fetchPrayerTimes(double lat, double lng) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  /// ---- LOCAL PRAYER CALCULATION USING `adhan` ----
+  Future<void> _calculatePrayerTimes(double lat, double lng) async {
+    final coordinates = Coordinates(lat, lng);
 
-    final url = Uri.parse(
-      'https://api.aladhan.com/v1/timings/$timestamp'
-          '?latitude=$lat&longitude=$lng&method=5',
-    );
+    // Choose your preferred calculation method
+    // Examples: CalculationMethod.egyptian / muslimWorldLeague / karachi ...
+    final params = CalculationMethod.egyptian.getParameters()
+      ..madhab = Madhab.shafi; // or Madhab.hanafi
 
-    final response = await http.get(url);
+    final prayerTimes = PrayerTimes.today(coordinates, params);
 
-    if (response.statusCode != 200) {
-      throw Exception("Failed prayer API call");
-    }
+    setState(() {
+      _prayerTimes = {
+        "الفجر": prayerTimes.fajr,
+        "الشروق": prayerTimes.sunrise,
+        "الظهر": prayerTimes.dhuhr,
+        "العصر": prayerTimes.asr,
+        "المغرب": prayerTimes.maghrib,
+        "العشاء": prayerTimes.isha,
+      };
+    });
 
-    final jsonBody = jsonDecode(response.body);
+    _prayerTimes.forEach((k, v) {
+      debugPrint("$k => $v");
+    });
 
-    if (jsonBody['code'] != 200) {
-      throw Exception("API returned error");
-    }
-
-    final timings = jsonBody['data']['timings'];
-
-    DateTime _parse(String t) {
-      final parts = t.split(':');
-      final hour = int.parse(parts[0]);
-      final min = int.parse(parts[1]);
-      final now = DateTime.now();
-      return DateTime(now.year, now.month, now.day, hour, min);
-    }
-
-    _prayerTimes = {
-      "الفجر": _parse(timings["Fajr"]),
-      "الشروق": _parse(timings["Sunrise"]),
-      "الظهر": _parse(timings["Dhuhr"]),
-      "العصر": _parse(timings["Asr"]),
-      "المغرب": _parse(timings["Maghrib"]),
-      "العشاء": _parse(timings["Isha"]),
-    };
-
-    setState(() {});
+    _startCountdown();
   }
 
+  /// ---- COUNTDOWN LOGIC ----
   void _startCountdown() {
     if (_prayerTimes.isEmpty) return;
 
@@ -114,13 +100,19 @@ class _AdhanState extends State<Adhan> {
     _timeRemaining = next.time.difference(now);
 
     _timer?.cancel();
-    _timer = Timer.periodic(Duration(seconds: 1), (_) {
-      final remaining = next.time.difference(DateTime.now());
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final current = DateTime.now();
+      final remaining = next.time.difference(current);
+
       if (remaining.isNegative) {
         _timer?.cancel();
-        _startCountdown();
+        _startCountdown(); // move to next prayer
       } else {
-        setState(() => _timeRemaining = remaining);
+        if (mounted) {
+          setState(() {
+            _timeRemaining = remaining;
+          });
+        }
       }
     });
   }
@@ -130,16 +122,14 @@ class _AdhanState extends State<Adhan> {
       ..sort((a, b) => a.value.compareTo(b.value));
 
     for (final p in entries) {
-      if (now.isBefore(p.value)) {
+      if (p.value.isAfter(now)) {
         return _Prayer(name: p.key, time: p.value);
       }
     }
 
-    // Next day fajr
-    return _Prayer(
-      name: "الفجر",
-      time: _prayerTimes["الفجر"]!.add(Duration(days: 1)),
-    );
+    // All prayers passed → next Fajr (tomorrow)
+    final tomorrowFajr = _prayerTimes["الفجر"]!.add(const Duration(days: 1));
+    return _Prayer(name: "الفجر", time: tomorrowFajr);
   }
 
   @override
@@ -148,36 +138,40 @@ class _AdhanState extends State<Adhan> {
     super.dispose();
   }
 
+  /// ---- UI ----
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
-    return SafeArea(
-      child: Scaffold(
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: ExactAssetImage(backgroundimage),
-              fit: BoxFit.cover,
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.55),
-                BlendMode.darken,
-              ),
-            ),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: ExactAssetImage(backgroundimage),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.55),
+            BlendMode.darken,
           ),
-          child: Stack(
+        ),
+      ),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
             children: [
               SingleChildScrollView(
                 child: Column(
                   children: [
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ..._buildPrayerCards(),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                    /// LOCATION CARD (UPDATED)
+                    // Location card
                     Container(
                       width: width * 0.9,
                       padding: const EdgeInsets.all(15),
@@ -210,14 +204,14 @@ class _AdhanState extends State<Adhan> {
                       ),
                     ),
 
-                    SizedBox(height: height),
+                    const SizedBox(height: 150),
                   ],
                 ),
               ),
 
-              /// COUNTDOWN BOX
+              // Countdown box
               Positioned(
-                bottom: 30,
+                bottom: 0,
                 left: width * 0.1,
                 right: width * 0.1,
                 child: Container(

@@ -196,7 +196,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         _savelastPage();
                         print("$url");
                       });
-
                     },
                     itemCount: listOfImages.length,
                     itemBuilder: (context, index) {
@@ -618,7 +617,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: MediaQuery.of(context).size.width >
                           MediaQuery.of(context).size.height
                       ? MediaQuery.of(context).size.height * 3
-                      : MediaQuery.of(context).size.height - 25,
+                      : MediaQuery.of(context).size.height - 35,
                   child: Image(
                     fit: BoxFit.fill,
                     image: AssetImage("images/$img"),
