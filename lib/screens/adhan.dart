@@ -6,9 +6,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl hide TextDirection;
 import 'package:kf_drawer/kf_drawer.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:quran/Model/Variable_declarations.dart';
 
 class Adhan extends KFDrawerContent {
@@ -25,40 +22,43 @@ class _AdhanState extends State<Adhan> {
   Timer? _timer;
   Duration _timeRemaining = Duration.zero;
   String _nextPrayer = "";
-  String? country = '';
-  bool isLoading = true;
 
-  bool _isNotificationEnabled = true;
+  /// NEW — detailed location
+  String country = "";
+  String adminArea = "";
+  String city = "";
+  String district = "";
+
+  bool isLoading = true;
 
   Map<String, DateTime> _prayerTimes = {};
 
   @override
   void initState() {
     super.initState();
-    _loadNotificationPreference();
     _initializeWithPassedLocation();
   }
 
   Future<void> _initializeWithPassedLocation() async {
     try {
-      List<Placemark> placeMarks = await placemarkFromCoordinates(
-        widget.lat,
-        widget.lang,
-      );
+      List<Placemark> placeMarks =
+      await placemarkFromCoordinates(widget.lat, widget.lang);
 
       if (placeMarks.isNotEmpty) {
-        country = placeMarks[0].country ?? '';
+        final pm = placeMarks[0];
+
+        country = pm.country ?? "";
+        adminArea = pm.administrativeArea ?? "";
+        city = pm.locality ?? "";
+        district = pm.subLocality ?? "";
       }
 
       await _fetchPrayerTimes(widget.lat, widget.lang);
-
       _startCountdown();
     } catch (e) {
       debugPrint("Error initializing prayer times: $e");
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -135,15 +135,11 @@ class _AdhanState extends State<Adhan> {
       }
     }
 
+    // Next day fajr
     return _Prayer(
       name: "الفجر",
       time: _prayerTimes["الفجر"]!.add(Duration(days: 1)),
     );
-  }
-
-  Future<void> _loadNotificationPreference() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _isNotificationEnabled = prefs.getBool('isNotificationEnabled') ?? true;
   }
 
   @override
@@ -177,11 +173,11 @@ class _AdhanState extends State<Adhan> {
               SingleChildScrollView(
                 child: Column(
                   children: [
-
+                    SizedBox(height: 20),
                     ..._buildPrayerCards(),
-
                     SizedBox(height: 10),
 
+                    /// LOCATION CARD (UPDATED)
                     Container(
                       width: width * 0.9,
                       padding: const EdgeInsets.all(15),
@@ -192,15 +188,19 @@ class _AdhanState extends State<Adhan> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "${country ?? ''}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                          Expanded(
+                            child: Text(
+                              "$country - $adminArea - $city - $district",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.right,
+                              maxLines: 2,
                             ),
                           ),
                           const Text(
-                            " : موقعك الحالي هو",
+                            "موقعك الحالي:",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -215,6 +215,7 @@ class _AdhanState extends State<Adhan> {
                 ),
               ),
 
+              /// COUNTDOWN BOX
               Positioned(
                 bottom: 30,
                 left: width * 0.1,
@@ -263,7 +264,8 @@ class _AdhanState extends State<Adhan> {
     return _prayerTimes.entries
         .map(
           (entry) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        padding:
+        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         child: _buildCard(
           entry.key,
           formatter.format(entry.value),
