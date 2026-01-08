@@ -243,11 +243,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                         ),
 
-                        SizedBox(height: 18),
+                        SizedBox(height: 10),
 
                         // AUDIO CONTROLS
                         Container(
-                          height: 55,
+                          height: 40,
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                             color: Colors.black54,
@@ -295,7 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
 
-                        SizedBox(height: 15),
+                        SizedBox(height: 10),
 
                         // RECITER SELECT BOX
                         GestureDetector(
@@ -356,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             );
                           },
                           child: Container(
-                            height: 50,
+                            height: 40,
                             width: double.infinity,
                             padding: EdgeInsets.symmetric(horizontal: 15),
                             decoration: BoxDecoration(
@@ -406,7 +406,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: MediaQuery.of(context).size.height * 0.48,
+                    height: MediaQuery.of(context).size.height * 0.43,
                     //padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.93),

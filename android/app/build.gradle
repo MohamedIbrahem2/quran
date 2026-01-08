@@ -51,8 +51,8 @@ android {
         applicationId "giga.quran"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 35
-        versionCode 161
-        versionName "18.0.24"
+        versionCode 166
+        versionName "18.0.26"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
