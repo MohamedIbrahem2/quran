@@ -5,7 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:quran/screens/homePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'Model/notifcation_prayer.dart';
 import 'screens/HomeView.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -25,25 +25,25 @@ void callbackDispatcher() {
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
-  Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: false,  // Set to false for production
-  );
-
-  // Schedule the task to run daily
-  Workmanager().registerPeriodicTask(
-    "dailyPrayerNotification",
-    "dailyPrayerNotificationTask",
-    frequency: Duration(days: 1), // Run daily
-  );
-  await requestNotificationPermission();
-
-  const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
+  // Workmanager().initialize(
+  //   callbackDispatcher,
+  //   isInDebugMode: false,  // Set to false for production
+  // );
+  //
+  // // Schedule the task to run daily
+  // Workmanager().registerPeriodicTask(
+  //   "dailyPrayerNotification",
+  //   "dailyPrayerNotificationTask",
+  //   frequency: Duration(days: 1), // Run daily
+  // );
+  // await requestNotificationPermission();
+  //
+  // const AndroidInitializationSettings initializationSettingsAndroid =
+  // AndroidInitializationSettings('@mipmap/ic_launcher');
+  //
+  // const InitializationSettings initializationSettings = InitializationSettings(
+  //   android: initializationSettingsAndroid,
+  // );
   LocationPermission permission;
   permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied) {
@@ -53,17 +53,17 @@ void main() async{
     }
   }
 
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  schedulePrayerNotifications();
+  // await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // schedulePrayerNotifications();
   runApp(
   ChangeNotifierProvider<AppState>(
       create: (_) => AppState(),
       child:MyApp()));}
-Future<void> requestNotificationPermission() async {
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
-  }
-}
+// Future<void> requestNotificationPermission() async {
+//   if (await Permission.notification.isDenied) {
+//     await Permission.notification.request();
+//   }
+// }
 class AppState with ChangeNotifier {
    AppState();
      int pageOfSaved = 0;
@@ -142,7 +142,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     _determinePosition();
-    Wakelock.enable();
+    WakelockPlus.enable();
     super.initState();
   }
   

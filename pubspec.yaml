@@ -1,114 +1,87 @@
 name: quran
 description: A new Flutter project.
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+2
+version: 1.0.1+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
-  flutter_svg: ^2.0.10+1
-  flutter_qiblah: ^3.0.3
-  http: ^1.2.0
-  share: ^2.0.4
-  fluttertoast: ^8.2.4
-  wakelock: ^0.6.2
-  url_launcher: ^6.2.5
-  shared_preferences: ^2.2.2
-  provider: ^6.1.2
-  flutter_easyloading: ^3.0.0
-  choice: ^2.3.1
-  # flutter_adhan: ^1.0.1
-  # adhan: ^1.1.16
   flutter:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl:
-  intl_translation:
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.6
-  scoped_model: ^2.0.0
-  geolocator_web: ^3.0.0
-  location_web: any
-  shared_preferences_web: any
-  url_launcher_web: any
-  audioplayers_web: ^4.1.0
-  arabic_font: ^0.0.9
-  audioplayers: ^5.2.1
-  audio_video_progress_bar: ^2.0.2
-  geolocator: ^11.0.0
-  google_maps_flutter: ^2.6.0
-  adhan: ^2.0.0+1
-  kf_drawer: ^1.2.1
+  # Core Packages
+  http: ^1.2.0
+  provider: ^6.1.2
+  intl: any
+  # UI & Animations
+  flutter_svg: ^2.0.10+1
   animated_text_kit: ^4.2.2
   liquid_progress_indicator: ^0.4.0
+
+  # Quran & Qiblah
+  flutter_qiblah: ^3.0.3
+  arabic_font: ^0.0.9
+
+  # Audio
+  audioplayers: ^5.2.1
+  audioplayers_web: ^4.1.0
+  audio_video_progress_bar: ^2.0.2
+
+  # Location & Maps
+  geolocator: ^11.0.0
+  geolocator_web: ^3.0.0
   location: ^6.0.1
+  location_web: any
   geocoding: ^3.0.0
+  google_maps_flutter: ^2.6.0
+
+  # Notifications & Background Work
   flutter_local_notifications: ^17.2.2
-  permission_handler: ^11.3.1
   workmanager: ^0.5.2
+
+  # Permissions
+  permission_handler: ^11.3.1
+
+  # Storage
+  shared_preferences: ^2.2.2
+  shared_preferences_web: any
+
+  # Launcher & Sharing
+  url_launcher: ^6.2.5
+  url_launcher_web: any
+  share_plus: ^7.2.0   # REPLACEMENT for 'share' (deprecated)
+
+  # Toasts & Loading
+  fluttertoast: ^8.2.4
+  flutter_easyloading: ^3.0.0
+
+  # Others
+  choice: ^2.3.1
+  kf_drawer: ^1.2.1
+  wakelock_plus: ^1.1.6  # REPLACEMENT for deprecated 'wakelock'
+  adhan: ^2.0.0+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter.
 flutter:
 
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - data/data.json
     - data/tafseer.json
     - images/
     - assets/sound/
     - android/app/src/main/res/raw/
-  #  - images/a_dot_ham.jpeg
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   fonts:
     - family: quran
       fonts:
         - asset: fonts/Al-QuranAlKareem.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages

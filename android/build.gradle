@@ -1,20 +1,17 @@
 buildscript {
-    ext.kotlin_version = '1.9.25' // <= expected version is 1.5.1
+    ext.kotlin_version = "1.9.22"
+
     repositories {
         google()
         mavenCentral()
     }
-    ext {
-        Java_Version = JavaVersion.VERSION_1_8
-        Kotlin_Language_Version = '1.7'
-        Kotlin_Plugin_Version = '1.7.0'
-    }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1' // downloads 1.7.1 Metadata
+        classpath "com.android.tools.build:gradle:7.4.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
+
 allprojects {
     repositories {
         google()
@@ -22,10 +19,12 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.buildDir = "../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
 subprojects {
     project.evaluationDependsOn(':app')
 }

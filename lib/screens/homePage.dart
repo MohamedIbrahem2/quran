@@ -25,7 +25,7 @@ import 'package:quran/screens/our.dart';
 import 'package:quran/qiblah/qiblah.dart';
 import 'package:quran/screens/tafseer.dart';
 import 'package:quran/search.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'audio/saf7aaGetAudio.dart';
 
@@ -196,7 +196,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         _savelastPage();
                         print("$url");
                       });
-
                     },
                     itemCount: listOfImages.length,
                     itemBuilder: (context, index) {
@@ -204,795 +203,364 @@ class _MyHomePageState extends State<MyHomePage> {
                     }),
                 show
                     ? Positioned(
-                        top: 0,
-                        child: Container(
-                          padding: EdgeInsets.only(right: 10, left: 10),
-                          height: 35,
-                          width: MediaQuery.of(context).size.width,
-                          color: Colors.black87,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 18),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.92),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // DRAG BAR TOP (optional)
+                        Container(
+                          width: 45,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        SizedBox(height: 15),
+
+                        // TOP INFO ROW
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("الجزء $part",
+                                style: TextStyle(color: Colors.white, fontSize: 16)),
+                            Text("$page",
+                                style: TextStyle(color: Colors.white, fontSize: 16)),
+                            Text(page % 2 == 0 ? "وجه أيسر" : "وجه أيمن",
+                                style: TextStyle(color: Colors.white, fontSize: 16)),
+                            Text("سورة $swra",
+                                style: TextStyle(color: Colors.white, fontSize: 16)),
+                          ],
+                        ),
+
+                        SizedBox(height: 10),
+
+                        // AUDIO CONTROLS
+                        Container(
+                          height: 40,
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                "الجزء $part",
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.white),
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.fast_rewind,
+                                    color: Colors.white, size: 28),
+                                onPressed: () {
+                                  if (possition.inSeconds > 10) {
+                                    audioPlayer.seek(Duration(
+                                        seconds: possition.inSeconds - 10));
+                                  }
+                                },
                               ),
-                              Text(
-                                "$page",
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.white),
+                              IconButton(
+                                icon: Icon(
+                                  isplay ? Icons.pause : Icons.play_arrow,
+                                  color: isplay ? Colors.white60 : Colors.green,
+                                  size: 32,
+                                ),
+                                onPressed: () => playPause(),
                               ),
-                              Text(
-                                page % 2 == 0 ? "وجه ايسر" : "وجه ايمن",
-                                style: TextStyle(
-                                    fontSize: 17, color: Colors.white),
+                              IconButton(
+                                icon: Icon(Icons.fast_forward,
+                                    color: Colors.white, size: 28),
+                                onPressed: () {
+                                  if (possition.inSeconds + 10 < duration.inSeconds) {
+                                    audioPlayer.seek(Duration(
+                                        seconds: possition.inSeconds + 10));
+                                  }
+                                },
                               ),
-                              Text(
-                                "سورة $swra",
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.white),
-                              )
+                              IconButton(
+                                icon: Icon(Icons.stop, color: Colors.red, size: 28),
+                                onPressed: () {
+                                  audioPlayer.stop();
+                                  setState(() => isplay = false);
+                                },
+                              ),
                             ],
                           ),
-                        ))
-                    : Container(),
-                show ?
-                Positioned(
-                  top:34,
-                  right: 0,
-                child: Container(
-                  height:50,
-                  width:210,
-                  color: Colors.black87,
-                  child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(icon: Icon(Icons.fast_rewind , color:Colors.white , size: 30),
-                    onPressed: (){
-                    if(possition.inSeconds.toInt() - 10 > 0) { audioPlayer.seek(Duration(seconds: possition.inSeconds.toInt() - 10 ));}
-                    },) ,
-                    Container(
-                                        height: 40,
-                                        width: 1,
-                                        color: Colors.white30,
-                                      ),
-                    IconButton(onPressed: ()  {
-                        playPause();
-                      },
-                      icon: Icon(
-                        isplay == false && "${audioPlayer.state}" != "AudioPlayerState.PLAYING"? Icons.play_arrow : Icons.pause,
-                        size: 30,
-                        color: isplay == false && "${audioPlayer.state}" != "AudioPlayerState.PLAYING"? Colors.green:Colors.white60,
-                      ),),
-                      Container(
-                                        height: 40,
-                                        width: 1,
-                                        color: Colors.white30,
-                                      ),
-                      IconButton(icon: Icon(Icons.fast_forward , color:Colors.white , size: 30),
-                    onPressed: (){
-                     if(possition.inSeconds.toInt() + 10 < duration.inSeconds.toInt()) {audioPlayer.seek(Duration(seconds: possition.inSeconds.toInt() + 10 ));}
-                    },) ,
-                    Container(
-                                        height: 40,
-                                        width: 1,
-                                        color: Colors.white30,
-                                      ),
-                    IconButton(icon: Icon(Icons.stop , color:Colors.red[900] , size: 30),
-                    onPressed: (){
-                    audioPlayer.stop();
-                    setState(() {
-                      isplay = false;
-                    });
-                    },) ,
+                        ),
 
-                  ],
-                  ),
-                )):Container(),
-                show
-                    ? Positioned(
-                        bottom: 0,
-                        child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.width / 6.5,
-                            child: Image(
-                              image: AssetImage("images/bar.png"),
-                              fit: BoxFit.fill,
-                            )))
-                    : Container(),
-                   show
-                    ? Positioned(
-                      bottom: 60,
-                      child: Container(
-                        color: Colors.white,
-                        height: 60,
-                        width: MediaQuery.of(context).size.width,
-                        child: Center(
-                          child: PromptedChoice<String>.single(
-                            title: 'اختر القارئ المفضل لديك',
-                            clearable: true,
-                            value: selectedValue,
-                            onChanged: (state){
-                              selectedValue = state;
-                              _saveQareaaValue(choices.indexOf(state!) + 1);
-                              appState.setQareaa(choices.indexOf(state) + 1);
-                              String thePageNumber = initialPage<10 ? "00$initialPage": initialPage>=10 && initialPage<100 ? "0$initialPage":"$initialPage";
-                              int partNumber = listOfPartPerPage[initialPage - 1]+1;
-                              url = soundUrl("$partNumber", "$thePageNumber");
-                            },
-                            itemCount: choices.length,
-                            itemBuilder: (state, i) {
-                              return ChoiceChip(
-                                elevation: 5,
-                                selected: state.selected(choices[i]),
-                                onSelected: state.onSelected(choices[i]),
-                                label: Text(choices[i]),
-                              );
-                            },
-                            listBuilder: ChoiceList.createGrid(
-                              spacing: 10,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 25,
+                        SizedBox(height: 10),
+
+                        // RECITER SELECT BOX
+                        GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                               ),
+                              builder: (context) {
+                                return Container(
+                                  height: MediaQuery.of(context).size.height * 0.55,
+                                  padding: EdgeInsets.all(20),
+                                  child: PromptedChoice<String>.single(
+                                    title: 'اختر القارئ المفضل لديك',
+                                    clearable: true,
+                                    value: selectedValue,
+                                    onChanged: (state) {
+                                      Navigator.pop(context); // close the sheet
+
+                                      setState(() {
+                                        selectedValue = state;
+                                      });
+
+                                      // ORIGINAL LOGIC
+                                      _saveQareaaValue(choices.indexOf(state!) + 1);
+                                      appState.setQareaa(choices.indexOf(state) + 1);
+
+                                      String thePageNumber = initialPage < 10
+                                          ? "00$initialPage"
+                                          : initialPage < 100
+                                          ? "0$initialPage"
+                                          : "$initialPage";
+
+                                      int partNumber = listOfPartPerPage[initialPage - 1] + 1;
+
+                                      setState(() {
+                                        url = soundUrl("$partNumber", "$thePageNumber");
+                                      });
+                                    },
+                                    itemCount: choices.length,
+                                    itemBuilder: (state, i) {
+                                      return ChoiceChip(
+                                        elevation: 5,
+                                        selected: state.selected(choices[i]),
+                                        onSelected: state.onSelected(choices[i]),
+                                        label: Text(choices[i]),
+                                      );
+                                    },
+                                    listBuilder: ChoiceList.createGrid(
+                                      spacing: 10,
+                                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            height: 40,
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              selectedValue ?? "اختر القارئ المفضل لديك",
+                              style: TextStyle(color: Colors.black, fontSize: 17),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
-                      ),
-                    ):Container(),
+
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                )
+                    : Container(),
+
+// ----------------------------------------------------
+// TAJWEED COLOR BAR BELOW MENU (exactly like screenshot)
+// ----------------------------------------------------
+                Positioned(
+                  bottom: show
+                      ? 0
+                      : -200, // hide when menu closed
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.07,
+                    child: Image.asset(
+                      "images/bar.png",
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+
+// ----------------------------------------------------
+// BOTTOM MENU — EXACT screenshot design
+// ----------------------------------------------------
                 show
                     ? Positioned(
-                        top: 84,
-                        right: 0,
-                        child: Container(
-                          padding: EdgeInsets.all(10),
-                          height: MediaQuery.of(context).size.height * 0.76,
-                          width: 180,
-                          color: Colors.black87,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Container(
-                                  alignment: Alignment.center,
-                                  //padding: EdgeInsets.only(right:10,left:10),
-                                  width: 170,
-                                  height: 310,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Home()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.search,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "البحث",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          if(lat == null || lang == null){
-                                            Center(child: CircularProgressIndicator());
-                                          }else{
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        Adhan(lat: lat!, lang: lang!,)));
-                                          }
-
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.mosque_outlined,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "مواقيت الصلاة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                           //getLocation();
-                                           Navigator.push(context, MaterialPageRoute(builder: (context)=>qiblah()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.directions,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "إتجاه القبلة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          //getLocation();
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>Azkar()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.calendar_month,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "الأذكار",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          print(page);
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) => Tafseer(
-                                                      listOfNameSwraPerPages[
-                                                          page-1],
-                                                      page)));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.book,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "التفسير",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=>Saf7aaGetAudio(listOfNameSwraPerPages[page-1],page,swraNameList[listOfNameSwraPerPages[page - 1]]) ));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.audiotrack,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "تلاوة آيات الصفحة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            darkMode = !darkMode;
-                                          });
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.brightness_3,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "الوضع الليلي",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            show = false;
-                                          });
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                CustomSaveDialog(
-                                              page: page,
-                                              title:
-                                                  "هل تود تغيير مكان العلامة ؟",
-                                              description: "",
-                                              buttonText: "نعم",
-                                              image: Image(
-                                                image: AssetImage(
-                                                    "images/icon.png"),
-                                                fit: BoxFit.fill,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.bookmark_border,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "حفظ علامة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          _pageController.animateToPage(
-                                            appState.getPageOfSaved,
-                                            duration:
-                                                Duration(milliseconds: 350),
-                                            curve: Curves.easeIn,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.bookmark_border,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "إنتقال إلى علامة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) =>
-                                                CustomGoDialog(
-                                              title:
-                                                  "رقم الصفحة التي تود الذهاب اليها",
-                                              buttonText: "ذهاب",
-                                              image: Image(
-                                                image: AssetImage(
-                                                    "images/icon.png"),
-                                                fit: BoxFit.fill,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.exit_to_app,
-                                                size: 22,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "إنتقال إلى صفحة",
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(height: 1),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  height: 1,
-                                  width: 170,
-                                  color: Colors.white30,
-                                ),
-                                Container(
-                                  //padding: EdgeInsets.only(right:10,left:10),
-                                  width: MediaQuery.of(context).size.width,
-                                  height: 120,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Fehres()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.list,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الفهرس",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Fehress()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.spa,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الاجزاء",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      FehresPages()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.library_books,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "الصفحات",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      // Container(
-                                      //   height: 1,
-                                      //   width: 170,
-                                      //   color: Colors.white30,
-                                      // ),
-                                      // GestureDetector(
-                                      //   onTap: () {
-                                      //     setState(() {
-                                      //       getAudio = true;
-                                      //     });
-                                      //   },
-                                      //   child: Container(
-                                      //     width: 170,
-                                      //     color: Colors.transparent,
-                                      //     child: Row(
-                                      //       children: <Widget>[
-                                      //         Icon(
-                                      //           Icons.audiotrack,
-                                      //           size: 25,
-                                      //           color: Colors.white,
-                                      //         ),
-                                      //         SizedBox(width: 10),
-                                      //         Text(
-                                      //           "تلاوة الصفحة",
-                                      //           style: TextStyle(
-                                      //               fontSize: 19,
-                                      //               color: Colors.white),
-                                      //         ),
-                                      //       ],
-                                      //     ),
-                                      //   ),
-                                      // ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  height: 1,
-                                  width: 170,
-                                  color: Colors.white30,
-                                ),
-                                Container(
-                                  //padding: EdgeInsets.only(right:10,left:10),
-                                  width: MediaQuery.of(context).size.width,
-                                  height: 110,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: <Widget>[
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Doaa()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.import_contacts,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "دعاء الختم",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          final RenderBox box =
-                                              context.findRenderObject() as RenderBox;
-                                          Share.share(
-                                              "وددت مشاركة تطبيق المصحف هذا معك \n https://play.google.com/store/apps/details?id=giga.quran",
-                                              subject:
-                                                  "وددت مشاركة تطبيق المصحف هذا معك",
-                                              sharePositionOrigin:
-                                                  box.localToGlobal(
-                                                          Offset.zero) &
-                                                      box.size);
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.share,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "مشاركة",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        width: 170,
-                                        color: Colors.white30,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      A3mal()));
-                                        },
-                                        child: Container(
-                                          width: 170,
-                                          color: Colors.transparent,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.group,
-                                                size: 25,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "تواصل معنا",
-                                                style: TextStyle(
-                                                    fontSize: 19,
-                                                    color: Colors.white),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                  bottom: 50,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.43,
+                    //padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.93),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(35),
+                        topRight: Radius.circular(35),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 45,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        ))
-                    : Container()
+                        ),
+                        SizedBox(height: 20),
+                        Expanded(
+                          child: GridView.count(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 5,
+                            crossAxisSpacing: 0,
+                            childAspectRatio: (MediaQuery.of(context).size.width / 5) / 65,
+                            children: [
+                              _menuItem(Icons.list, "الفهرس", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => Fehres()));
+                              }),
+                              _menuItem(Icons.exit_to_app, "إنتقال إلى صفحة", () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => CustomGoDialog(
+                                    title: "رقم الصفحة التي تود الذهاب اليها",
+                                    buttonText: "ذهاب",
+                                    image: Image.asset("images/icon.png"),
+                                  ),
+                                );
+                              }),
+                              _menuItem(Icons.bookmark_border, "حفظ علامة", () {
+                                setState(() {
+                                  show = false; // close menu like original behavior
+                                });
+
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) => CustomSaveDialog(
+                                    page: page,
+                                    title: "هل تود تغيير مكان العلامة ؟",
+                                    description: "",
+                                    buttonText: "نعم",
+                                    image: Image(
+                                      image: AssetImage("images/icon.png"),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                );
+                              }),
+
+                              _menuItem(Icons.bookmark, "إنتقال إلى علامة", () {
+                                _pageController.animateToPage(
+                                  appState.getPageOfSaved,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeIn,
+                                );
+                              }),
+                              _menuItem(Icons.spa, "الأجزاء", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => Fehress()));
+                              }),
+                              _menuItem(Icons.library_books, "الصفحات", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => FehresPages()));
+                              }),
+                              _menuItem(Icons.search, "البحث", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => Home()));
+                              }),
+                              _menuItem(Icons.mosque_outlined, "مواقيت الصلاة", () {
+                                if (lat != null && lang != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          Adhan(lat: lat!, lang: lang!),
+                                    ),
+                                  );
+                                }
+                              }),
+                              _menuItem(Icons.directions, "إتجاه القبلة", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => qiblah()));
+                              }),
+                              _menuItem(Icons.calendar_month, "الأذكار", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => Azkar()));
+                              }),
+                              _menuItem(Icons.book, "التفسير", () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => Tafseer(
+                                      listOfNameSwraPerPages[page - 1],
+                                      page,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              _menuItem(Icons.audiotrack, "تلاوة آيات الصفحة", () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => Saf7aaGetAudio(
+                                      listOfNameSwraPerPages[page - 1],
+                                      page,
+                                      swraNameList[listOfNameSwraPerPages[page - 1]],
+                                    ),
+                                  ),
+                                );
+                              }),
+                              _menuItem(Icons.brightness_3, "الوضع الليلي", () {
+                                setState(() => darkMode = !darkMode);
+                              }),
+                              _menuItem(Icons.import_contacts, "دعاء الختم", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => Doaa()));
+                              }),
+                              _menuItem(Icons.share, "مشاركة", () {
+                                final RenderBox box =
+                                context.findRenderObject() as RenderBox;
+
+                                Share.share(
+                                  "وددت مشاركة تطبيق المصحف هذا معك \n https://play.google.com/store/apps/details?id=giga.quran",
+                                  sharePositionOrigin:
+                                  box.localToGlobal(Offset.zero) & box.size,
+                                );
+                              }),
+                              _menuItem(Icons.group, "تواصل معنا", () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (_) => A3mal()));
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                    : Container(),
+
               ],
             ),
           )),
@@ -1009,6 +577,24 @@ class _MyHomePageState extends State<MyHomePage> {
      SharedPreferences prefs = await SharedPreferences.getInstance();
      await prefs.setInt('Qareaa', valQ);
   }
+  Widget _menuItem(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 32),
+          SizedBox(height: 6),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 15),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget pages(img) {
     AppState appState = Provider.of<AppState>(context, listen: false);
@@ -1031,7 +617,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: MediaQuery.of(context).size.width >
                           MediaQuery.of(context).size.height
                       ? MediaQuery.of(context).size.height * 3
-                      : MediaQuery.of(context).size.height - 25,
+                      : MediaQuery.of(context).size.height - 35,
                   child: Image(
                     fit: BoxFit.fill,
                     image: AssetImage("images/$img"),

@@ -1,253 +1,248 @@
 import 'dart:async';
-import 'package:adhan/adhan.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:intl/intl.dart' hide TextDirection;
+import 'package:intl/intl.dart' as intl hide TextDirection;
 import 'package:kf_drawer/kf_drawer.dart';
-import '../Model/Functions.dart';
-import '../Model/UserSimplePreferences.dart';
-import '../Model/Variable_declarations.dart';
-import 'package:intl/intl.dart' as intl;
+import 'package:quran/Model/Variable_declarations.dart';
+import 'package:adhan/adhan.dart';
 
 class Adhan extends KFDrawerContent {
-  final double lat, lang;
+  final double lat;
+  final double lang;
 
   Adhan({required this.lat, required this.lang});
 
   @override
-  State<Adhan> createState() => _Home_PageState();
+  State<Adhan> createState() => _AdhanState();
 }
 
-class _Home_PageState extends State<Adhan> {
+class _AdhanState extends State<Adhan> {
   Timer? _timer;
-  Duration _timeRemaining = Duration();
+  Duration _timeRemaining = Duration.zero;
   String _nextPrayer = "";
-  String? country = '';
-  int num = 0;
-  TimeOfDay timeOfDay = TimeOfDay.now();
+
+  String country = "";
+  String adminArea = "";
+  String city = "";
+  String district = "";
+
   bool isLoading = true;
-  Future<void> getUserCountry() async {
-      List<Placemark> placeMark =
-      await placemarkFromCoordinates(widget.lat, widget.lang);
-      print(placeMark[0].country);
-      country = placeMark[0].country;
-      setState(() {
-      if (country == "Egyptian") {
-        num = 1;
-        country = 'مصر';
-      } else if (country == "Saudi Arabia") {
-        country = 'السعوديه';
-        num = 2;
-      } else if (country == "Qatar") {
-        country = 'قطر';
-        num = 3;
-      } else if (country == "United Arab Emirates") {
-        country = 'الأمارات';
-        num = 4;
-      } else if (country == "Kuwait") {
-        country = 'الكويت';
-        num = 5;
-      }
-        isLoading = false;
-      });
 
-  }
+  Map<String, DateTime> _prayerTimes = {};
 
-  void _startCountdown() {
-    DateTime now = DateTime.now();
-    DateTime? nextPrayerTime;
-
-    if (now.isBefore(getPrayerTime().fajr)) {
-      nextPrayerTime = getPrayerTime().fajr;
-      _nextPrayer = "الفجر";
-    } else if (now.isBefore(getPrayerTime().dhuhr)) {
-      nextPrayerTime = getPrayerTime().dhuhr;
-      _nextPrayer = "الظهر";
-    } else if (now.isBefore(getPrayerTime().asr)) {
-      nextPrayerTime = getPrayerTime().asr;
-      _nextPrayer = "العصر";
-    } else if (now.isBefore(getPrayerTime().maghrib)) {
-      nextPrayerTime = getPrayerTime().maghrib;
-      _nextPrayer = "المغرب";
-    } else if (now.isBefore(getPrayerTime().isha)) {
-      nextPrayerTime = getPrayerTime().isha;
-      _nextPrayer = "العشاء";
-    } else {
-      nextPrayerTime = getPrayerTime().fajr.add(const Duration(days: 1));
-      _nextPrayer = "الفجر";
-    }
-    // Check if the adjusted time is still in the future
-    if (now.isAfter(nextPrayerTime)) {
-      // If the adjusted time has passed, skip to the next prayer
-      _skipToNextPrayer(now);
-    } else {
-      _setTimer(nextPrayerTime, now);
-    }
-  }
-
-  void _skipToNextPrayer(DateTime now) {
-    // Loop through prayers and find the first one that's in the future
-    DateTime? nextPrayerTime;
-
-    if (now.isBefore(getPrayerTime().dhuhr)) {
-      nextPrayerTime = getPrayerTime().dhuhr;
-      _nextPrayer = "الظهر";
-    } else if (now.isBefore(getPrayerTime().asr)) {
-      nextPrayerTime = getPrayerTime().asr;
-      _nextPrayer = "العصر";
-    } else if (now.isBefore(getPrayerTime().maghrib)) {
-      nextPrayerTime = getPrayerTime().maghrib;
-      _nextPrayer = "المغرب";
-    } else if (now.isBefore(getPrayerTime().isha)) {
-      nextPrayerTime = getPrayerTime().isha;
-      _nextPrayer = "العشاء";
-    } else {
-      nextPrayerTime = getPrayerTime().fajr.add(Duration(days: 1));
-      _nextPrayer = "الفجر";
-    }
-
-    _setTimer(nextPrayerTime, now);
-  }
-
-  void _setTimer(DateTime nextPrayerTime, DateTime now) {
-    setState(() {
-      _timeRemaining = nextPrayerTime.difference(now);
-    });
-
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-        _timeRemaining = nextPrayerTime.difference(DateTime.now());
-        if (_timeRemaining.isNegative) {
-          _timer!.cancel();
-          _startCountdown();
-        }
-    });
-  }
-
-  initState() {
+  @override
+  void initState() {
     super.initState();
-     getUserCountry();
+    _initializeWithPassedLocation();
+  }
+
+  Future<void> _initializeWithPassedLocation() async {
+    try {
+      // Get human-readable location
+      List<Placemark> placeMarks =
+      await placemarkFromCoordinates(widget.lat, widget.lang);
+
+      if (placeMarks.isNotEmpty) {
+        final pm = placeMarks[0];
+        country = pm.country ?? "";
+        adminArea = pm.administrativeArea ?? "";
+        city = pm.locality ?? "";
+        district = pm.subLocality ?? "";
+      }
+
+      // Calculate prayer times locally (no API)
+      await _calculatePrayerTimes(widget.lat, widget.lang);
+    } catch (e) {
+      debugPrint("Error initializing prayer times: $e");
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  /// ---- LOCAL PRAYER CALCULATION USING `adhan` ----
+  Future<void> _calculatePrayerTimes(double lat, double lng) async {
+    final coordinates = Coordinates(lat, lng);
+
+    // Choose your preferred calculation method
+    // Examples: CalculationMethod.egyptian / muslimWorldLeague / karachi ...
+    final params = CalculationMethod.egyptian.getParameters()
+      ..madhab = Madhab.shafi; // or Madhab.hanafi
+
+    final prayerTimes = PrayerTimes.today(coordinates, params);
+
+    setState(() {
+      _prayerTimes = {
+        "الفجر": prayerTimes.fajr,
+        "الشروق": prayerTimes.sunrise,
+        "الظهر": prayerTimes.dhuhr,
+        "العصر": prayerTimes.asr,
+        "المغرب": prayerTimes.maghrib,
+        "العشاء": prayerTimes.isha,
+      };
+    });
+
+    _prayerTimes.forEach((k, v) {
+      debugPrint("$k => $v");
+    });
+
     _startCountdown();
+  }
+
+  /// ---- COUNTDOWN LOGIC ----
+  void _startCountdown() {
+    if (_prayerTimes.isEmpty) return;
+
+    final now = DateTime.now();
+    final next = _getNextPrayerTime(now);
+
+    _nextPrayer = next.name;
+    _timeRemaining = next.time.difference(now);
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final current = DateTime.now();
+      final remaining = next.time.difference(current);
+
+      if (remaining.isNegative) {
+        _timer?.cancel();
+        _startCountdown(); // move to next prayer
+      } else {
+        if (mounted) {
+          setState(() {
+            _timeRemaining = remaining;
+          });
+        }
+      }
+    });
+  }
+
+  _Prayer _getNextPrayerTime(DateTime now) {
+    final entries = _prayerTimes.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+
+    for (final p in entries) {
+      if (p.value.isAfter(now)) {
+        return _Prayer(name: p.key, time: p.value);
+      }
+    }
+
+    // All prayers passed → next Fajr (tomorrow)
+    final tomorrowFajr = _prayerTimes["الفجر"]!.add(const Duration(days: 1));
+    return _Prayer(name: "الفجر", time: tomorrowFajr);
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     _timer?.cancel();
+    super.dispose();
   }
 
+  /// ---- UI ----
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-    return SafeArea(
-      child: Scaffold(
-        body: isLoading  ? Center(child: CircularProgressIndicator()):
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xff7c94b6),
-            image: DecorationImage(
-              image: new ExactAssetImage(backgroundimage),
-              colorFilter: new ColorFilter.mode(
-                  background_color, BlendMode.dstATop),
-              fit: BoxFit.cover,
-            ),
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: ExactAssetImage(backgroundimage),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withOpacity(0.55),
+            BlendMode.darken,
           ),
-          child: Stack(
+        ),
+      ),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
             children: [
-              Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Center(
-                          child: Column(
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    ..._buildPrayerCards(),
+                    const SizedBox(height: 10),
+
+                    // Location card
+                    Container(
+                      width: width * 0.9,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            height: height * 0.040,
+                          Expanded(
+                            child: Text(
+                              "$country - $adminArea - $city - $district",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.right,
+                              maxLines: 2,
+                            ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: height * 0.007,
-                                horizontal: width * 0.009),
-                            child: Column(
-                              children: [
-                                card(
-                                    "الفجر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().fajr)),
-                                card(
-                                    "الشروق",
-                                    intl.DateFormat.jm().format(
-                                        getPrayerTime().sunrise)),
-                                card(
-                                    "الظهر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().dhuhr)),
-                                card(
-                                    "العصر",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().asr)),
-                                card(
-                                    "المغرب",
-                                    intl.DateFormat.jm().format(
-                                        getPrayerTime().maghrib)),
-                                card(
-                                    "العشاء",
-                                    intl.DateFormat.jm()
-                                        .format(getPrayerTime().isha)),
-                                Card(
-                                  color: Colors.black,
-                                  elevation: 5,
-                                  child: ListTile(
-                                    trailing: Text(
-                                      "موقعك الحالي هو :",
-                                      textDirection: TextDirection.rtl,
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    title: Text(
-                                      country!,
-                                      style: TextStyle(
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                )
-                              ],
+                          const Text(
+                            "موقعك الحالي:",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
                             ),
                           ),
                         ],
-                      ))
-                    ],
-                  ),
-                ],
-              ),
-              Positioned(
-                bottom: height * 0.06,
-                left: height * 0.14,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'الأذان القادم صلاه $_nextPrayer',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white),
                       ),
                     ),
-                    Text(
-                      '${_timeRemaining.inHours.remainder(24).toString().padLeft(2, '0')}:${_timeRemaining.inMinutes.remainder(60).toString().padLeft(2, '0')}:${_timeRemaining.inSeconds.remainder(60).toString().padLeft(2, '0')}',
-                      style: TextStyle(
-                          fontSize: 23,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    )
+
+                    const SizedBox(height: 150),
                   ],
+                ),
+              ),
+
+              // Countdown box
+              Positioned(
+                bottom: 0,
+                left: width * 0.1,
+                right: width * 0.1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 25, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        "الوقت المتبقي لصلاة $_nextPrayer",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _formatDuration(_timeRemaining),
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -257,29 +252,47 @@ class _Home_PageState extends State<Adhan> {
     );
   }
 
-  Widget card(name, time) {
+  List<Widget> _buildPrayerCards() {
+    final formatter = intl.DateFormat.jm();
+
+    return _prayerTimes.entries
+        .map(
+          (entry) => Padding(
+        padding:
+        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: _buildCard(
+          entry.key,
+          formatter.format(entry.value),
+        ),
+      ),
+    )
+        .toList();
+  }
+
+  Widget _buildCard(String name, String time) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 70,
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       decoration: BoxDecoration(
-          color: Colors.black26, borderRadius: BorderRadius.circular(15)),
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(25),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             time,
-            style: TextStyle(
-              fontSize: 22,
+            style: const TextStyle(
               color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             name,
-            style: TextStyle(
-              fontSize: 22,
+            style: const TextStyle(
               color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -287,32 +300,17 @@ class _Home_PageState extends State<Adhan> {
     );
   }
 
-  PrayerTimes getPrayerTime() {
-    final myCoordinates = Coordinates(widget.lat, widget.lang);
-
-    var param;
-    switch (num) {
-      case 1:
-        param = CalculationMethod.egyptian.getParameters();
-        break;
-      case 2:
-        param = CalculationMethod.umm_al_qura.getParameters();
-        break;
-      case 3:
-        param = CalculationMethod.qatar.getParameters();
-        break;
-      case 4:
-        param = CalculationMethod.dubai.getParameters();
-        break;
-      case 5:
-        param = CalculationMethod.kuwait.getParameters();
-        break;
-      default:
-        param = CalculationMethod.egyptian.getParameters();
-    }
-    final params = param;
-    params.madhab = Madhab.shafi;
-    final prayerTimes = PrayerTimes.today(myCoordinates, params);
-    return prayerTimes;
+  String _formatDuration(Duration d) {
+    String h = d.inHours.toString().padLeft(2, '0');
+    String m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    String s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return "$h:$m:$s";
   }
+}
+
+class _Prayer {
+  final String name;
+  final DateTime time;
+
+  _Prayer({required this.name, required this.time});
 }
