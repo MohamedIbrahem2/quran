@@ -488,10 +488,9 @@ packages:
   kf_drawer:
     dependency: "direct main"
     description:
-      name: kf_drawer
-      sha256: "423b29bd332af22196a1f5221129ebc2471726d4bb3307127532f75ab933e6af"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/kf_drawer"
+      relative: true
+    source: path
     version: "1.2.1"
   leak_tracker:
     dependency: transitive
@@ -520,10 +519,9 @@ packages:
   liquid_progress_indicator:
     dependency: "direct main"
     description:
-      name: liquid_progress_indicator
-      sha256: ffd7eca3995e03ce0bd0e1f10ce11da3d8877c51e1270d1e8b9556dbbbbe6689
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/liquid_progress_indicator"
+      relative: true
+    source: path
     version: "0.4.0"
   location:
     dependency: "direct main"
