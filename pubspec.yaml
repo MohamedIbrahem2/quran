@@ -66,11 +66,7 @@ dependencies:
   wakelock_plus: ^1.1.6  # REPLACEMENT for deprecated 'wakelock'
   adhan: ^2.0.0+1
 
-dependency_overrides:
-  liquid_progress_indicator:
-    path: packages/liquid_progress_indicator
-  kf_drawer:
-    path: packages/kf_drawer
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -90,3 +86,9 @@ flutter:
     - family: quran
       fonts:
         - asset: fonts/Al-QuranAlKareem.ttf
+
+dependency_overrides:
+  liquid_progress_indicator:
+    path: packages/liquid_progress_indicator
+  kf_drawer:
+    path: packages/kf_drawer
