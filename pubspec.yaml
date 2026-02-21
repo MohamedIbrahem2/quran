@@ -68,6 +68,9 @@ dependencies:
 
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
+
+
   flutter_test:
     sdk: flutter
 
@@ -92,3 +95,8 @@ dependency_overrides:
     path: packages/liquid_progress_indicator
   kf_drawer:
     path: packages/kf_drawer
+
+flutter_launcher_icons:
+  ios: true
+  android: true
+  image_path: "images/icon.png"
